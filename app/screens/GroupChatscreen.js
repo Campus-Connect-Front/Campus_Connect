@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity } from 'react-native';
+import { Icon } from 'react-native-elements'; // 적절한 아이콘 패키지를 사용하세요.
 
 const messages = [
   { id: '1', text: '안녕하세요!', sender: 'AAA', isMine: false, time: '오전 10:00' },
@@ -8,19 +9,25 @@ const messages = [
   { id: '4', text: '모두 안녕하세요!', sender: 'CCC', isMine: false, time: '오전 10:03' },
 ];
 
-export const GroupChatScreen = ({ route }) => {
+export const GroupChatScreen = ({ route, navigation }) => {
   const { chatName } = route.params;
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: chatName,
+      headerRight: () => (
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Icon name="menu" size={25} color="black" style={{ marginRight: 15 }} />
+        </View>
+      ),
+    });
+  }, [navigation, chatName]);
 
   const renderItem = ({ item }) => (
     <View style={[styles.messageContainer, item.isMine ? styles.myMessageContainer : styles.otherMessageContainer]}>
       {!item.isMine && <Image source={require('../assets/circle_logo.png')} style={styles.profileImage} />}
       <View>
         {!item.isMine && <Text style={styles.senderName}>{item.sender}</Text>}
-        {item.isMine && (
-          <TouchableOpacity>
-            <Text style={styles.spellCheckButton}>맞춤법 수정하기</Text>
-          </TouchableOpacity>
-        )}
         <View style={[styles.bubbleContainer, item.isMine ? styles.myBubbleContainer : styles.otherBubbleContainer]}>
           <View style={[styles.bubble, item.isMine ? styles.myBubble : styles.otherBubble]}>
             <Text style={item.isMine ? styles.myMessageText : styles.otherMessageText}>{item.text}</Text>
@@ -118,12 +125,6 @@ const styles = StyleSheet.create({
     color: '#9291A6',
     fontSize: 12,
     marginBottom: 2,
-  },
-  spellCheckButton: {
-    color: '#9291A6',
-    textDecorationLine: 'underline',
-    alignSelf: 'flex-start',
-    marginBottom: 5,
   },
   inputContainer: {
     flexDirection: 'row',

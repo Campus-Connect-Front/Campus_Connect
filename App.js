@@ -10,7 +10,6 @@ import { MatchingScreen } from './app/screens/matchingScr';
 import { MyPageScreen } from './app/screens/myPageScr';
 import { OneChatScreen } from './app/screens/OneChatscreen';
 import { GroupChatScreen } from './app/screens/GroupChatscreen';
-import { Drawchat } from './app/screens/Drawchat';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -72,29 +71,15 @@ export default function App() {
         <Stack.Screen
           name='OneChat'
           component={OneChatScreen}
-          options={({ route }) => ({
-            title: route.params.chatName,
-            headerRight: () => (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Icon name="report" size={25} color="black" style={{ marginRight: 15 }} />
-                <Icon name="exit-to-app" size={25} color="black" />
-              </View>
-            )
-          })}
+          options={{ headerShown: true }}
         />
         <Stack.Screen
           name='GroupChat'
           component={GroupChatScreen}
-          options={({ route }) => ({
-            title: route.params.chatName,
-            headerRight: () => (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Icon name="menu" size={25} color="black" style={{ marginRight: 15 }} />                
-              </View>
-            )
-          })}
+          options={{ headerShown: true }}
         />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+

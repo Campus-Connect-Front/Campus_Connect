@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity } from 'react-native';
+import { Icon } from 'react-native-elements'; // or 'react-native-vector-icons' if you're using that library
+import { useNavigation } from '@react-navigation/native';
 
 const messages = [
   { id: '1', text: '안녕하세요!', isMine: false, time: '오전 10:00' },
@@ -8,16 +10,24 @@ const messages = [
 
 export const OneChatScreen = ({ route }) => {
   const { chatName } = route.params;
+  const navigation = useNavigation();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: chatName,
+      headerRight: () => (
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Icon name="report" size={25} color="black" style={{ marginRight: 15 }} />
+          <Icon name="exit-to-app" size={25} color="black" />
+        </View>
+      )
+    });
+  }, [navigation, chatName]);
 
   const renderItem = ({ item }) => (
     <View style={[styles.messageContainer, item.isMine ? styles.myMessageContainer : styles.otherMessageContainer]}>
       {!item.isMine && <Image source={require('../assets/circle_logo.png')} style={styles.profileImage} />}
       <View>
-        {item.isMine && (
-          <TouchableOpacity>
-            <Text style={styles.spellCheckButton}>맞춤법 수정하기</Text>
-          </TouchableOpacity>
-        )}
         <View style={[styles.bubbleContainer, item.isMine ? styles.myBubbleContainer : styles.otherBubbleContainer]}>
           <View style={[styles.bubble, item.isMine ? styles.myBubble : styles.otherBubble]}>
             <Text style={item.isMine ? styles.myMessageText : styles.otherMessageText}>{item.text}</Text>
@@ -111,12 +121,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 10,
   },
-  spellCheckButton: {
-    color: '#9291A6',
-    textDecorationLine: 'underline',
-    alignSelf: 'flex-start',
-    marginBottom: 5,
-  },
   inputContainer: {
     flexDirection: 'row',
     padding: 10,
@@ -127,10 +131,10 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 5, 
+    borderRadius: 5,
     paddingHorizontal: 10,
     height: 40,
-    backgroundColor: '#fff', 
+    backgroundColor: '#fff',
   },
   sendButton: {
     marginLeft: 10,
