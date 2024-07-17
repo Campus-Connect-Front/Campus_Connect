@@ -21,41 +21,38 @@ import {
 export default class MultiSelectButton extends Component {
     constructor(props) {
         super(props);
+        const set = Array(this.props.count).fill(false)
+        if (this.props.initialSelect != null) {
+            this.props.initialSelect.forEach(element => {
+                set[element] = true
+            });
+        }
         this.state = {
-            //select: this.props.initSelect.length > 0 ? this.props.initSelect : Array(this.props.count).fill(false),
-            select: Array(this.props.count).fill(false),
+            select: set,
             lastSelected: '',
             selectAll: false,
         }
     }
     render() {
+        if (this.props.fixedSelect) {
+            return (
+                <View style={this.props.containerStyle}>
+                    {
+                        this.props.textArray.map((data, index) => {
+                            return (
+                                <View
+                                    style={[this.props.buttonStyle, this.state.select[index] && { backgroundColor: this.props.selectedButtonColor }]}
+                                >
+                                    <Text style={[this.props.textStyle, this.state.select[index] && { color: this.props.selectedTextColor }]}>{data}</Text>
+                                </View>
+                            );
+                        })
+                    }
+                </View>
+            )
+        }
         return (
             <View style={this.props.containerStyle}>
-                {
-                    this.props.selectAll ?
-                        <View style={{ width: 500 }}>
-                            <TouchableOpacity
-                                style={[this.props.buttonStyle, this.state.selectAll && { backgroundColor: this.props.selectedButtonColor }]}
-                                onPress={() => {
-                                    if (this.state.selectAll) {
-                                        this.setState({
-                                            selectAll: false,
-                                            select: Array(this.props.count).fill(false)
-                                        });
-                                    } else {
-                                        this.setState({
-                                            selectAll: true,
-                                            select: Array(this.props.count).fill(true)
-                                        });
-                                    }
-                                }}
-                            >
-                                <Text style={[this.props.textStyle, this.state.selectAll && { color: this.props.selectedTextColor }]}>{this.props.selectAllButtonText}</Text>
-                            </TouchableOpacity>
-                        </View>
-                        : null
-                }
-
                 {
                     this.props.textArray.map((data, index) => {
                         return (
