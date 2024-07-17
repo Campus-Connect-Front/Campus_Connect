@@ -10,6 +10,7 @@ import MultiSelectButton from '../components/MultiSelectButton';
 import { Entypo } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { horizontalLineStyle, selectButtonStyle, toastConfig } from '../assets/styles/globalStyles';
+import DoneButton from '../components/DoneButton';
 
 const removeSpace = text => (text.replace(/\s/g, ''))
 
@@ -192,20 +193,8 @@ export const BoardWriteScreen = ({ navigation }) => {
                         buttonStyle={{ width: 66, height: 37, marginLeft: 5, ...selectButtonStyle.container }}
                         textStyle={selectButtonStyle.text}
                     />
-
-                    <View style={{ backgroundColor: '#5678F0', borderRadius: 16, marginTop: 10 }}>
-                        <TouchableOpacity
-                            onPress={() => CreateStudy()}
-                            style={{ justifyContent: 'center', alignItems: 'center' }}>
-                            <Text style={{
-                                fontSize: 18,
-                                fontFamily: 'Pretendard-Bold',
-                                color: '#ffffff',
-                                paddingVertical: 15
-                            }}>스터디 생성</Text>
-                        </TouchableOpacity>
-                    </View>
                 </View>
+                <DoneButton containerStyle={{ marginTop: 10 }} text='스터디 생성' onPress={() => CreateStudy()} />
             </ScrollView>
             <Toast config={toastConfig} />
         </View>

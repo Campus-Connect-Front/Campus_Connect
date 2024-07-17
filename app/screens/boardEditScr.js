@@ -8,6 +8,7 @@ import SingleSelectButton from '../components/SingleSelectButton';
 import MultiSelectButton from '../components/MultiSelectButton';
 import Toast from 'react-native-toast-message';
 import { horizontalLineStyle, selectButtonStyle, toastConfig } from '../assets/styles/globalStyles';
+import DoneButton from '../components/DoneButton';
 
 const removeSpace = text => (text.replace(/\s/g, ''))
 
@@ -107,20 +108,8 @@ export const BoardEditScreen = ({ route, navigation }) => {
                         buttonStyle={{ width: 66, height: 37, marginLeft: 5, ...selectButtonStyle.container }}
                         textStyle={{ color: '#848484', ...selectButtonStyle.text}}
                     />
-
-                    <View style={{ backgroundColor: '#5678F0', borderRadius: 16, marginTop: 10 }}>
-                        <TouchableOpacity
-                            onPress={() => EditStudy()}
-                            style={{ justifyContent: 'center', alignItems: 'center' }}>
-                            <Text style={{
-                                fontSize: 18,
-                                fontFamily: 'Pretendard-Bold',
-                                color: '#ffffff',
-                                paddingVertical: 15
-                            }}>게시글 수정</Text>
-                        </TouchableOpacity>
-                    </View>
                 </View>
+                <DoneButton containerStyle={{ marginTop: 10 }} text='게시글 수정' onPress={() => EditStudy()} />
             </ScrollView>
             <Toast config={toastConfig}/>
         </View>

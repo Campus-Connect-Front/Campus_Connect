@@ -4,6 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { infoBoxStyles } from '../assets/styles/globalStyles';
+import DoneButton from '../components/DoneButton';
 
 export const BoardMatchingScreen = () => {
     const [loaded, error] = useFonts({
@@ -25,7 +26,7 @@ export const BoardMatchingScreen = () => {
             <View style={{ flex: 6, justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={style.TitleText}>Campus</Text>
                 <Text style={style.TitleText}>Connect!</Text>
-                <Image style={{marginTop: 20}} source={require('../assets/images/circle_logo_image.png')} />
+                <Image style={{ marginTop: 20 }} source={require('../assets/images/circle_logo_image.png')} />
             </View>
             <View style={{ flex: 4 }}>
                 <View style={infoBoxStyles.boxContainer}>
@@ -60,18 +61,7 @@ export const BoardMatchingScreen = () => {
                     </View>
                 </View>
             </View>
-
-            <View style={{ backgroundColor: '#5678F0', borderRadius: 16, marginBottom: 70 }}>
-                <TouchableOpacity
-                    style={{ justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{
-                        fontSize: 18,
-                        fontFamily: 'Pretendard-Bold',
-                        color: '#ffffff',
-                        paddingVertical: 15
-                    }}>채팅 시작하기</Text>
-                </TouchableOpacity>
-            </View>
+            <DoneButton text='채팅 시작하기' containerStyle={{ marginBottom: 70 }} />
         </View>
     )
 }
