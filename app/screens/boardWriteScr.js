@@ -9,35 +9,11 @@ import SingleSelectButton from '../components/SingleSelectButton';
 import MultiSelectButton from '../components/MultiSelectButton';
 import { Entypo } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
-
-const toastConfig = {
-    default: ({ text1, props }) => (
-        <View style={{
-            paddingHorizontal: 40,
-            paddingVertical: 10,
-            opacity: 0.9,
-            backgroundColor: '#757575',
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderRadius: 20,
-            ...Platform.select({
-                ios: {
-                    shadowColor: "#000000",
-                    shadowOpacity: 0.45,
-                },
-                android: { elevation: 5 }
-            })
-        }}>
-            <Text style={{
-                color: '#ffffff'
-            }}>{text1}</Text>
-        </View>
-    )
-}
+import { horizontalLineStyle, selectButtonStyle, toastConfig } from '../assets/styles/globalStyles';
 
 const removeSpace = text => (text.replace(/\s/g, ''))
 
-export const BoardWriteScreen = ({navigation}) => {
+export const BoardWriteScreen = ({ navigation }) => {
     const [selectedWay, setSelectedWay] = useState(null);
     const [selectedDays, setSelectedDays] = useState(null);
     const [open, setOpen] = useState(false);
@@ -184,7 +160,7 @@ export const BoardWriteScreen = ({navigation}) => {
                     onChangeText={(text) => { setTitle(text) }}
                     style={{ marginHorizontal: 25, marginTop: 18, ...style.TitleText }}
                     placeholder='게시글 제목을 입력해 주세요.' />
-                <View style={style.HorizontalLine} />
+                <View style={horizontalLineStyle} />
                 <View style={{ marginHorizontal: 25 }}>
                     <TextInput
                         value={content}
@@ -202,8 +178,8 @@ export const BoardWriteScreen = ({navigation}) => {
                         selectedButtonColor="#000000"
                         selectedTextColor="#ffffff"
                         containerStyle={{ flexDirection: 'row', marginTop: 5, marginBottom: 10 }}
-                        buttonStyle={{ width: 37, height: 37, ...style.SelectButton }}
-                        textStyle={style.SelectText}
+                        buttonStyle={{ width: 37, height: 37, marginLeft: 5, ...selectButtonStyle.container }}
+                        textStyle={selectButtonStyle.text}
                     />
                     <Text style={{ marginTop: 15, ...style.InfoText }}>방식</Text>
                     <SingleSelectButton
@@ -213,8 +189,8 @@ export const BoardWriteScreen = ({navigation}) => {
                         selectedButtonColor="#000000"
                         selectedTextColor="#ffffff"
                         containerStyle={{ flexDirection: 'row', marginTop: 5, marginBottom: 10 }}
-                        buttonStyle={{ width: 66, height: 37, ...style.SelectButton }}
-                        textStyle={style.SelectText}
+                        buttonStyle={{ width: 66, height: 37, marginLeft: 5, ...selectButtonStyle.container }}
+                        textStyle={selectButtonStyle.text}
                     />
 
                     <View style={{ backgroundColor: '#5678F0', borderRadius: 16, marginTop: 10 }}>
@@ -237,12 +213,6 @@ export const BoardWriteScreen = ({navigation}) => {
 }
 
 const style = StyleSheet.create({
-    HorizontalLine: {
-        height: 0.7,
-        backgroundColor: '#5678F0',
-        marginVertical: 10,
-        marginHorizontal: 25
-    },
     LanguageText: {
         fontFamily: 'Pretendard-Bold',
         fontSize: 15,
@@ -265,20 +235,6 @@ const style = StyleSheet.create({
     InfoText: {
         fontFamily: 'Pretendard-Regular',
         fontSize: 15,
-    },
-    SelectButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#ffffff',
-        borderRadius: 10,
-        marginLeft: 5,
-        ...Platform.select({
-            ios: {
-                shadowColor: "#000000",
-                shadowOpacity: 0.45,
-            },
-            android: { elevation: 5 }
-        })
     },
     SelectText: {
         fontFamily: 'Pretendard-Regular',

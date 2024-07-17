@@ -4,38 +4,12 @@ import { Text, View, StyleSheet, TextInput, TouchableOpacity, Platform, Alert } 
 import { useFonts } from 'expo-font';
 import { useEffect, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
-import DropDownPicker from 'react-native-dropdown-picker';
 import SingleSelectButton from '../components/SingleSelectButton';
 import MultiSelectButton from '../components/MultiSelectButton';
-import { Entypo } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
+import { horizontalLineStyle, selectButtonStyle, toastConfig } from '../assets/styles/globalStyles';
 
 const removeSpace = text => (text.replace(/\s/g, ''))
-
-const toastConfig = {
-    default: ({ text1, props }) => (
-        <View style={{
-            paddingHorizontal: 40,
-            paddingVertical: 10,
-            opacity: 0.9,
-            backgroundColor: '#757575',
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderRadius: 20,
-            ...Platform.select({
-                ios: {
-                    shadowColor: "#000000",
-                    shadowOpacity: 0.45,
-                },
-                android: { elevation: 5 }
-            })
-        }}>
-            <Text style={{
-                color: '#ffffff'
-            }}>{text1}</Text>
-        </View>
-    )
-}
 
 export const BoardEditScreen = ({ route, navigation }) => {
     const { id, title, content, language, recruit, frequency, way, days } = route.params;
@@ -99,7 +73,7 @@ export const BoardEditScreen = ({ route, navigation }) => {
                     onChangeText={(text) => { setEditTitle(text) }}
                     style={{ marginHorizontal: 25, marginTop: 18, ...style.TitleText }}
                     placeholder='게시글 제목을 입력해 주세요.'/>
-                <View style={style.HorizontalLine} />
+                <View style={horizontalLineStyle} />
                 <View style={{ marginHorizontal: 25 }}>
                     <TextInput
                         value={editContent}
@@ -118,8 +92,8 @@ export const BoardEditScreen = ({ route, navigation }) => {
                         selectedButtonColor="#666666"
                         selectedTextColor="#cecece"
                         containerStyle={{ flexDirection: 'row', marginTop: 5, marginBottom: 10 }}
-                        buttonStyle={{ width: 37, height: 37, ...style.SelectButton }}
-                        textStyle={style.SelectText}
+                        buttonStyle={{ width: 37, height: 37, marginLeft: 5, ...selectButtonStyle.container }}
+                        textStyle={{ color: '#848484', ...selectButtonStyle.text }}
                     />
                     <Text style={{ marginTop: 15, ...style.InfoText }}>방식</Text>
                     <SingleSelectButton
@@ -130,8 +104,8 @@ export const BoardEditScreen = ({ route, navigation }) => {
                         selectedButtonColor="#666666"
                         selectedTextColor="#cecece"
                         containerStyle={{ flexDirection: 'row', marginTop: 5, marginBottom: 10 }}
-                        buttonStyle={{ width: 66, height: 37, ...style.SelectButton }}
-                        textStyle={style.SelectText}
+                        buttonStyle={{ width: 66, height: 37, marginLeft: 5, ...selectButtonStyle.container }}
+                        textStyle={{ color: '#848484', ...selectButtonStyle.text}}
                     />
 
                     <View style={{ backgroundColor: '#5678F0', borderRadius: 16, marginTop: 10 }}>
@@ -154,12 +128,6 @@ export const BoardEditScreen = ({ route, navigation }) => {
 }
 
 const style = StyleSheet.create({
-    HorizontalLine: {
-        height: 0.7,
-        backgroundColor: '#5678F0',
-        marginVertical: 10,
-        marginHorizontal: 25
-    },
     LanguageText: {
         fontFamily: 'Pretendard-Bold',
         fontSize: 15,
@@ -183,23 +151,4 @@ const style = StyleSheet.create({
         fontFamily: 'Pretendard-Regular',
         fontSize: 15,
     },
-    SelectButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#dbdbdb',
-        borderRadius: 10,
-        marginLeft: 5,
-        ...Platform.select({
-            ios: {
-                shadowColor: "#000000",
-                shadowOpacity: 0.45,
-            },
-            android: { elevation: 5 }
-        })
-    },
-    SelectText: {
-        fontFamily: 'Pretendard-Regular',
-        fontSize: 14,
-        color: '#848484'
-    }
 });

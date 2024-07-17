@@ -3,6 +3,7 @@ import * as React from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { infoBoxStyles } from '../assets/styles/globalStyles';
 
 export const BoardMatchingScreen = () => {
     const [loaded, error] = useFonts({
@@ -27,33 +28,33 @@ export const BoardMatchingScreen = () => {
                 <Image style={{marginTop: 20}} source={require('../assets/images/circle_logo_image.png')} />
             </View>
             <View style={{ flex: 4 }}>
-                <View style={{ backgroundColor: '#ffffff', borderRadius: 10, marginHorizontal: 15 }}>
-                    <View style={{ backgroundColor: '#5678F0', alignItems: 'center', borderTopLeftRadius: 10, borderTopRightRadius: 10 }}>
-                        <Text style={{ color: '#ffffff', fontFamily: 'Pretendard-Bold', fontSize: 19, paddingVertical: 12 }}>스터디 정보</Text>
+                <View style={infoBoxStyles.boxContainer}>
+                    <View style={infoBoxStyles.boxTitleContiner}>
+                        <Text style={infoBoxStyles.boxTitleText}>스터디 정보</Text>
                     </View>
-                    <View style={style.TableContainer}>
-                        <View style={{ flexDirection: 'row' }}>
-                            <View style={{ ...style.TableTitleContainer }}>
-                                <Text style={style.TableTitleText}>방제</Text>
+                    <View style={infoBoxStyles.tableContainer}>
+                        <View style={infoBoxStyles.tableRowContainer_top}>
+                            <View style={infoBoxStyles.tableTitleContainer}>
+                                <Text style={infoBoxStyles.tableTitleText}>방제</Text>
                             </View>
-                            <View style={{ ...style.TableContentContainer }}>
-                                <Text style={style.TableContentText}>영어 AtoZ</Text>
-                            </View>
-                        </View>
-                        <View style={{ flexDirection: 'row', borderTopWidth: 0.5, borderBottomWidth: 0.5, borderColor: '#E0E0E0' }}>
-                            <View style={{ ...style.TableTitleContainer }}>
-                                <Text style={style.TableTitleText}>인원</Text>
-                            </View>
-                            <View style={{ ...style.TableContentContainer }}>
-                                <Text style={style.TableContentText}>5/6</Text>
+                            <View style={infoBoxStyles.tableContentContainer}>
+                                <Text style={infoBoxStyles.tableContentText}>영어 AtoZ</Text>
                             </View>
                         </View>
-                        <View style={{ flexDirection: 'row' }}>
-                            <View style={{ ...style.TableTitleContainer }}>
-                                <Text style={{ fontSize: 11, fontFamily: 'Pretendard-Regular' }}>스터디 언어</Text>
+                        <View style={infoBoxStyles.tableRowContainer_middle}>
+                            <View style={infoBoxStyles.tableTitleContainer}>
+                                <Text style={infoBoxStyles.tableTitleText}>인원</Text>
                             </View>
-                            <View style={{ ...style.TableContentContainer }}>
-                                <Text style={style.TableContentText}>영어</Text>
+                            <View style={infoBoxStyles.tableContentContainer}>
+                                <Text style={infoBoxStyles.tableContentText}>5/6</Text>
+                            </View>
+                        </View>
+                        <View style={infoBoxStyles.tableRowContainer_bottom}>
+                            <View style={infoBoxStyles.tableTitleContainer}>
+                                <Text style={infoBoxStyles.tableTitleText_small}>스터디 언어</Text>
+                            </View>
+                            <View style={infoBoxStyles.tableContentContainer}>
+                                <Text style={infoBoxStyles.tableContentText}>영어</Text>
                             </View>
                         </View>
                     </View>
