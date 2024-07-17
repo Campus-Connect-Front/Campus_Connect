@@ -17,6 +17,7 @@ import { BoardWriteScreen } from './boardWriteScr';
 import SingleSelectButton from '../components/SingleSelectButton';
 import { Feather } from '@expo/vector-icons';
 import { BoardMatchingScreen } from './boardMatchingScr';
+import { BoardEditScreen } from './boardEditScr';
 
 const Tab = createMaterialTopTabNavigator();
 const Stack = createStackNavigator();
@@ -27,7 +28,7 @@ const BoarderTab = ({ navigation, tag }) => {
             <FlatList
                 data={[
                     { id: '0001', title: '완전 기초부터 공부하실 분 구합니다!', content: '주 2회 영어 회화 스터디', language: '영어', recruit: '4', frequency: '2', way: 'nftf', days: ['토', '일'] },
-                    { id: '0002', title: '한국 문화 교류', content: '주 1회 한국 문화 체험', language: '한국어', recruit: '5', frequency: '1', way: 'ftf', days: ['월'] },
+                    { id: '0002', title: '한국 문화 교류', content: '주 1회 한국 문화 체험', language: '한국어', recruit: '2', frequency: '1', way: 'ftf', days: ['월'] },
                 ]}
                 renderItem={({ item }) => {
                     return (
@@ -59,7 +60,9 @@ const BoardList = ({ navigation }) => {
             headerTitleStyle: {
                 fontFamily: 'Pretendard-Bold',
                 fontSize: 18,
-                marginLeft: 10
+                ...Platform.select({
+                    android: { marginLeft: 10 }
+                })
             },
             headerShadowVisible: false,
             headerRight: () => (
@@ -159,17 +162,6 @@ export const BoardScreen = ({ navigation }) => {
                         headerBackImage: () => (
                             <Ionicons name="chevron-back" size={24} color="black" />
                         ),
-                        headerRight: () => (
-                            <View style={{ flexDirection: 'row' }}>
-                                <TouchableOpacity style={{ paddingHorizontal: 7 }}>
-                                    <Feather name="edit-3" size={24} color="#787878" />
-                                </TouchableOpacity>
-                                <TouchableOpacity style={{ marginRight: 15, paddingHorizontal: 7 }}>
-                                    <Feather name="trash-2" size={22} color="#787878" />
-                                </TouchableOpacity>
-                            </View>
-
-                        ),
                         headerShadowVisible: false
                     }}
                     name="Detail"
@@ -183,6 +175,15 @@ export const BoardScreen = ({ navigation }) => {
                     }}
                     name='Write'
                 >{(props) => <BoardWriteScreen {...props} />}</Stack.Screen>
+                <Stack.Screen
+                    options={{
+                        headerTitle: '',
+                        headerBackImage: () => (
+                            <AntDesign name="close" size={24} color="#CACACA" />
+                        )
+                    }}
+                    name='Edit'
+                >{(props) => <BoardEditScreen {...props} />}</Stack.Screen>
                 <Stack.Screen
                     options={{
                         headerTitle: () => (
@@ -255,10 +256,8 @@ const boardStyle = StyleSheet.create({
     },
     WriteButton: {
         position: 'absolute',
-        bottom: 0,
-        right: 0,
-        marginRight: 20,
-        marginBottom: 20,
+        bottom: 20,
+        right: 20,
         borderColor: '#5678F0',
         borderWidth: 3,
         borderRadius: 50,
