@@ -41,6 +41,7 @@ export default class MultiSelectButton extends Component {
                         this.props.textArray.map((data, index) => {
                             return (
                                 <View
+                                    key={index}
                                     style={[this.props.buttonStyle, this.state.select[index] && { backgroundColor: this.props.selectedButtonColor }]}
                                 >
                                     <Text style={[this.props.textStyle, this.state.select[index] && { color: this.props.selectedTextColor }]}>{data}</Text>
@@ -57,6 +58,7 @@ export default class MultiSelectButton extends Component {
                     this.props.textArray.map((data, index) => {
                         return (
                             <TouchableOpacity
+                                key={index}
                                 onPress={() => {
                                     let s = this.state.select;
                                     s[index] = !s[index];

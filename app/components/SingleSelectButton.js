@@ -35,6 +35,7 @@ export default class SingleSelectButton extends Component {
                         this.props.textArray.map((data, index) => {
                             return (
                                 <View
+                                    key={index}
                                     {...this.props}
                                     style={[this.props.buttonStyle, this.state.select[index] && { backgroundColor: this.props.selectedButtonColor }]}
                                 >
@@ -52,6 +53,7 @@ export default class SingleSelectButton extends Component {
                     this.props.textArray.map((data, index) => {
                         return (
                             <TouchableOpacity
+                                key={index}
                                 {...this.props}
                                 onPress={() => {
                                     let s = Array(this.props.count).fill(false);

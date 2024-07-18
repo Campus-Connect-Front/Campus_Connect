@@ -67,7 +67,7 @@ export const BoardDetailScreen = ({ route, navigation }) => {
                     <View style={{ flexDirection: 'row' }}>
                         {days.map((data, index) => {
                             return (
-                                <DayBox Day={data} />
+                                <DayBox key={index} Day={data} />
                             )
                         })}
                     </View>

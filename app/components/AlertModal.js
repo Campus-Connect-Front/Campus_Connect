@@ -110,16 +110,18 @@ export default class AlertModal extends Component {
                                     {
                                         this.props.alertButtons.map((buttons, index) => {
                                             return (
-                                                <TouchableOpacity style={{
-                                                    borderRadius: 6,
-                                                    paddingVertical: 3,
-                                                    width: 70,
-                                                    height: 25,
-                                                    justifyContent: 'center',
-                                                    alignItems: 'center',
-                                                    ...shadowStyle,
-                                                    ...buttons.style
-                                                }} onPress={buttons.onPress}>
+                                                <TouchableOpacity
+                                                    key={index}
+                                                    style={{
+                                                        borderRadius: 6,
+                                                        paddingVertical: 3,
+                                                        width: 70,
+                                                        height: 25,
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        ...shadowStyle,
+                                                        ...buttons.style
+                                                    }} onPress={buttons.onPress}>
                                                     <Text style={{ fontSize: 14, fontFamily: 'Pretendard-Regular' }}>{buttons.text}</Text>
                                                 </TouchableOpacity>
                                             )
