@@ -18,6 +18,7 @@ import SingleSelectButton from '../components/SingleSelectButton';
 import { Feather } from '@expo/vector-icons';
 import { BoardMatchingScreen } from './boardMatchingScr';
 import { BoardEditScreen } from './boardEditScr';
+import { selectButtonStyle } from '../assets/styles/globalStyles';
 
 const Tab = createMaterialTopTabNavigator();
 const Stack = createStackNavigator();
@@ -88,8 +89,8 @@ const BoardList = ({ navigation }) => {
                         selectedButtonColor="#000000"
                         selectedTextColor="#ffffff"
                         containerStyle={{ flexDirection: 'row', paddingVertical: 15, paddingHorizontal: 10, backgroundColor: '#EBEDF6' }}
-                        buttonStyle={{ width: 66, height: 37, ...boardStyle.SelectButton }}
-                        textStyle={boardStyle.SelectText}
+                        buttonStyle={{ width: 66, height: 37, marginHorizontal: 5, ...selectButtonStyle.container }}
+                        textStyle={selectButtonStyle.text}
                     />
                 </ScrollView>
             </View>
@@ -266,25 +267,6 @@ const boardStyle = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#ffffff'
-    },
-    SelectButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#ffffff',
-        borderRadius: 10,
-        marginLeft: 5,
-        marginRight: 5,
-        ...Platform.select({
-            ios: {
-                shadowColor: "#000000",
-                shadowOpacity: 0.45,
-            },
-            android: { elevation: 5 }
-        })
-    },
-    SelectText: {
-        fontFamily: 'Pretendard-Regular',
-        fontSize: 14
     },
     SearchInputContainer: {
         flex: 1,

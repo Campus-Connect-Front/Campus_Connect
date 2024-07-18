@@ -3,6 +3,9 @@ import * as React from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { infoBoxStyles } from '../assets/styles/globalStyles';
+import DoneButton from '../components/DoneButton';
+import InfoTableBox from '../components/InfoTableBox';
 
 export const BoardMatchingScreen = () => {
     const [loaded, error] = useFonts({
@@ -20,57 +23,33 @@ export const BoardMatchingScreen = () => {
         return null;
     }
     return (
-        <View style={{ flex: 1, paddingHorizontal: 25, backgroundColor: '#EBEDF6' }}>
-            <View style={{ flex: 6, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ flex: 1, backgroundColor: '#EBEDF6' }}>
+            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={style.TitleText}>Campus</Text>
                 <Text style={style.TitleText}>Connect!</Text>
-                <Image style={{marginTop: 20}} source={require('../assets/images/circle_logo_image.png')} />
+                <Image style={{ marginTop: 20 }} source={require('../assets/images/circle_logo_image.png')} />
             </View>
-            <View style={{ flex: 4 }}>
-                <View style={{ backgroundColor: '#ffffff', borderRadius: 10, marginHorizontal: 15 }}>
-                    <View style={{ backgroundColor: '#5678F0', alignItems: 'center', borderTopLeftRadius: 10, borderTopRightRadius: 10 }}>
-                        <Text style={{ color: '#ffffff', fontFamily: 'Pretendard-Bold', fontSize: 19, paddingVertical: 12 }}>스터디 정보</Text>
-                    </View>
-                    <View style={style.TableContainer}>
-                        <View style={{ flexDirection: 'row' }}>
-                            <View style={{ ...style.TableTitleContainer }}>
-                                <Text style={style.TableTitleText}>방제</Text>
-                            </View>
-                            <View style={{ ...style.TableContentContainer }}>
-                                <Text style={style.TableContentText}>영어 AtoZ</Text>
-                            </View>
-                        </View>
-                        <View style={{ flexDirection: 'row', borderTopWidth: 0.5, borderBottomWidth: 0.5, borderColor: '#E0E0E0' }}>
-                            <View style={{ ...style.TableTitleContainer }}>
-                                <Text style={style.TableTitleText}>인원</Text>
-                            </View>
-                            <View style={{ ...style.TableContentContainer }}>
-                                <Text style={style.TableContentText}>5/6</Text>
-                            </View>
-                        </View>
-                        <View style={{ flexDirection: 'row' }}>
-                            <View style={{ ...style.TableTitleContainer }}>
-                                <Text style={{ fontSize: 11, fontFamily: 'Pretendard-Regular' }}>스터디 언어</Text>
-                            </View>
-                            <View style={{ ...style.TableContentContainer }}>
-                                <Text style={style.TableContentText}>영어</Text>
-                            </View>
-                        </View>
-                    </View>
-                </View>
+            <View style={{ marginTop: 30 }}>
+                <InfoTableBox 
+                    title='스터디 정보'
+                    tableInfos={[
+                        {
+                            title: '방제목',
+                            info: '영어 AtoZ'
+                        },
+                        {
+                            title: '인원',
+                            info: '5/6'
+                        },
+                        {
+                            title: '스터디 언어',
+                            titleStyle: {fontSize: 11},
+                            info: '영어'
+                        }
+                    ]}
+                />
             </View>
-
-            <View style={{ backgroundColor: '#5678F0', borderRadius: 16, marginBottom: 70 }}>
-                <TouchableOpacity
-                    style={{ justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{
-                        fontSize: 18,
-                        fontFamily: 'Pretendard-Bold',
-                        color: '#ffffff',
-                        paddingVertical: 15
-                    }}>채팅 시작하기</Text>
-                </TouchableOpacity>
-            </View>
+            <DoneButton text='채팅 시작하기' containerStyle={{ marginTop: 30, marginBottom: 70 }} />
         </View>
     )
 }
