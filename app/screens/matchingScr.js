@@ -7,17 +7,30 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { Image } from 'react-native';
 import { useFonts } from 'expo-font';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import AlertModal from '../components/AlertModal';
+import { alertButtonStyle } from '../assets/styles/globalStyles';
 
 const MatchingWaitScreen = ({ navigation }) => {
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const timeRef = useRef(null);
 
     const editMyInfo = () => {
         console.log('edit my info');
     }
 
     const startMatching = () => {
-        navigation.navigate('Done');
+        setModalVisible(true);
+        timeRef.current = setTimeout(() => {
+            setModalVisible(false);
+            navigation.navigate('Done');
+        }, 2000);
+    }
+
+    const stopMatching = () => {
+        clearTimeout(timeRef.current);
     }
 
     return (
@@ -52,6 +65,21 @@ const MatchingWaitScreen = ({ navigation }) => {
                     onPress={() => startMatching()}
                 />
             </View>
+            <AlertModal
+                modalVisible={modalVisible}
+                setModalVisible={setModalVisible}
+                title='채팅 상대 매칭'
+                message='매칭 중...'
+                showCloseButton={false}
+                alertButtons={[
+                    {
+                        text: '취소',
+                        style: alertButtonStyle.destructive,
+                        onPress: () => { setModalVisible(false); stopMatching(); }
+                    }
+                ]}
+                onRequestClose={() => { stopMatching() }}
+            />
         </View>
     )
 }
