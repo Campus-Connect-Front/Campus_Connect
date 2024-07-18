@@ -1,35 +1,12 @@
 import * as React from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import DoneButton from '../components/DoneButton';
-import { horizontalLineStyle } from '../assets/styles/globalStyles';
-
-const showDeleteAlert = ({ navigation }) => {
-    Alert.alert(
-        '삭제',
-        '정말 게시글을 삭제하시겠습니까?',
-        [
-            {
-                text: '삭제',
-                style: 'destructive',
-                onPress: () => {
-                    console.log('delete');
-                    navigation.pop();
-                }
-            },
-            {
-                text: '취소',
-                style: 'cancel',
-            },
-        ],
-        {
-            cancelable: true,
-        },
-    );
-}
+import { alertButtonStyle, horizontalLineStyle } from '../assets/styles/globalStyles';
+import AlertModal from '../components/AlertModal';
 
 const DayBox = ({ Day }) => {
     return (
@@ -55,6 +32,7 @@ const DayBox = ({ Day }) => {
 }
 
 export const BoardDetailScreen = ({ route, navigation }) => {
+    const [modalVisible, setModalVisible] = useState(false);
     const isAuthor = true;
     const [loaded, error] = useFonts({
         'Pretendard-Bold': require('../assets/fonts/Pretendard-Bold.ttf'),
@@ -69,6 +47,12 @@ export const BoardDetailScreen = ({ route, navigation }) => {
 
     if (!loaded && !error) {
         return null;
+    }
+
+    const deletePost = ({navigation}) => {
+        console.log('delete');
+        setModalVisible(false);
+        navigation.pop();
     }
 
     const { id, title, content, language, recruit, frequency, way, days } = route.params;
@@ -113,13 +97,31 @@ export const BoardDetailScreen = ({ route, navigation }) => {
                             <Feather name="edit-3" size={24} color="#787878" />
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => showDeleteAlert({ navigation })}
+                            onPress={() => setModalVisible(true)}
                             style={{ marginRight: 15, paddingHorizontal: 7 }}>
                             <Feather name="trash-2" size={22} color="#787878" />
                         </TouchableOpacity>
                     </View>
                     : null
             }
+            <AlertModal 
+                modalVisible={modalVisible}
+                setModalVisible={setModalVisible}
+                title='게시글 삭제'
+                message={'정말 게시글을 삭제하시겠습니까?'}
+                alertButtons={[
+                    {
+                        text: '취소',
+                        style: alertButtonStyle.default,
+                        onPress: () => { setModalVisible(false) }
+                    },
+                    {
+                        text: '삭제',
+                        style: alertButtonStyle.destructive,
+                        onPress: () => { deletePost({navigation}) }
+                    }
+                ]}
+            />
         </View>
     )
 }

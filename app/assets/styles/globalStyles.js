@@ -7,6 +7,25 @@ export const horizontalLineStyle = {
     marginHorizontal: 25
 };
 
+export const shadowStyle = {
+    ...Platform.select({
+        ios: {
+            shadowColor: "#000000",
+            shadowOpacity: 0.45,
+        },
+        android: { elevation: 5 }
+    })
+}
+
+export const alertButtonStyle = StyleSheet.create({
+    destructive: {
+        backgroundColor: '#FF8989',
+    },
+    default: {
+        backgroundColor: '#7F9AF5',
+    }
+})
+
 export const toastConfig = {
     default: ({ text1 }) => (
         <View style={{
