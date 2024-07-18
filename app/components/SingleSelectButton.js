@@ -28,6 +28,24 @@ export default class SingleSelectButton extends Component {
         }
     }
     render() {
+        if (this.props.fixedSelect) {
+            return (
+                <View style={this.props.containerStyle}>
+                    {
+                        this.props.textArray.map((data, index) => {
+                            return (
+                                <View
+                                    {...this.props}
+                                    style={[this.props.buttonStyle, this.state.select[index] && { backgroundColor: this.props.selectedButtonColor }]}
+                                >
+                                    <Text style={[this.props.textStyle, this.state.select[index] && { color: this.props.selectedTextColor }]}>{data}</Text>
+                                </View>
+                            );
+                        })
+                    }
+                </View>
+            )
+        }
         return (
             <View style={this.props.containerStyle}>
                 {
