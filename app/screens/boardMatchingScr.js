@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { infoBoxStyles } from '../assets/styles/globalStyles';
 import DoneButton from '../components/DoneButton';
+import InfoTableBox from '../components/InfoTableBox';
 
 export const BoardMatchingScreen = () => {
     const [loaded, error] = useFonts({
@@ -23,45 +24,32 @@ export const BoardMatchingScreen = () => {
     }
     return (
         <View style={{ flex: 1, paddingHorizontal: 25, backgroundColor: '#EBEDF6' }}>
-            <View style={{ flex: 6, justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={style.TitleText}>Campus</Text>
                 <Text style={style.TitleText}>Connect!</Text>
                 <Image style={{ marginTop: 20 }} source={require('../assets/images/circle_logo_image.png')} />
             </View>
-            <View style={{ flex: 4 }}>
-                <View style={infoBoxStyles.boxContainer}>
-                    <View style={infoBoxStyles.boxTitleContiner}>
-                        <Text style={infoBoxStyles.boxTitleText}>스터디 정보</Text>
-                    </View>
-                    <View style={infoBoxStyles.tableContainer}>
-                        <View style={infoBoxStyles.tableRowContainer_top}>
-                            <View style={infoBoxStyles.tableTitleContainer}>
-                                <Text style={infoBoxStyles.tableTitleText}>방제</Text>
-                            </View>
-                            <View style={infoBoxStyles.tableContentContainer}>
-                                <Text style={infoBoxStyles.tableContentText}>영어 AtoZ</Text>
-                            </View>
-                        </View>
-                        <View style={infoBoxStyles.tableRowContainer_middle}>
-                            <View style={infoBoxStyles.tableTitleContainer}>
-                                <Text style={infoBoxStyles.tableTitleText}>인원</Text>
-                            </View>
-                            <View style={infoBoxStyles.tableContentContainer}>
-                                <Text style={infoBoxStyles.tableContentText}>5/6</Text>
-                            </View>
-                        </View>
-                        <View style={infoBoxStyles.tableRowContainer_bottom}>
-                            <View style={infoBoxStyles.tableTitleContainer}>
-                                <Text style={infoBoxStyles.tableTitleText_small}>스터디 언어</Text>
-                            </View>
-                            <View style={infoBoxStyles.tableContentContainer}>
-                                <Text style={infoBoxStyles.tableContentText}>영어</Text>
-                            </View>
-                        </View>
-                    </View>
-                </View>
+            <View style={{ marginTop: 30 }}>
+                <InfoTableBox 
+                    title='스터디 정보'
+                    tableInfos={[
+                        {
+                            title: '방제목',
+                            info: '영어 AtoZ'
+                        },
+                        {
+                            title: '인원',
+                            info: '5/6'
+                        },
+                        {
+                            title: '스터디 언어',
+                            titleStyle: {fontSize: 11},
+                            info: '영어'
+                        }
+                    ]}
+                />
             </View>
-            <DoneButton text='채팅 시작하기' containerStyle={{ marginBottom: 70 }} />
+            <DoneButton text='채팅 시작하기' containerStyle={{ marginTop: 30, marginBottom: 70 }} />
         </View>
     )
 }

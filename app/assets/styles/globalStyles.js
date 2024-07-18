@@ -116,10 +116,6 @@ export const infoBoxStyles = StyleSheet.create({
         fontFamily: 'Pretendard-Regular',
         fontSize: 14
     },
-    tableTitleText_small: {
-        fontFamily: 'Pretendard-Regular',
-        fontSize: 11
-    },
     tableContentText: {
         fontFamily: 'Pretendard-Bold',
         fontSize: 13
