@@ -54,6 +54,7 @@ export default class AlertModal extends Component {
                 visible={this.props.modalVisible}
                 onRequestClose={() => {
                     this.props.setModalVisible(false);
+                    (this.props.onRequestClose != null) ? this.props.onRequestClose() : null
                 }}
             >
                 <View style={{ flex: 1, backgroundColor: "rgba(217, 217, 217, 0.4)", justifyContent: 'center', alignItems: 'center' }}>
