@@ -1,26 +1,63 @@
-import React from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity } from 'react-native';
+import { Icon } from 'react-native-elements';
+import ParticipantModal from './ParticipantModal'; 
 
-const messages = [
+const initialMessages = [
   { id: '1', text: '안녕하세요!', sender: 'AAA', isMine: false, time: '오전 10:00' },
   { id: '2', text: '안녕하세요! 반갑습니다.', isMine: true, time: '오전 10:01' },
   { id: '3', text: '저도 반갑습니다.', sender: 'BBB', isMine: false, time: '오전 10:02' },
   { id: '4', text: '모두 안녕하세요!', sender: 'CCC', isMine: false, time: '오전 10:03' },
 ];
 
-export const GroupChatScreen = ({ route }) => {
+const initialParticipants = [
+  { id: 'AAA', name: 'User AAA', profileImage: require('../assets/circle_logo.png') },
+  { id: 'BBB', name: 'User BBB', profileImage: require('../assets/circle_logo.png') },
+  { id: 'CCC', name: 'User CCC', profileImage: require('../assets/circle_logo.png') },
+];
+
+export const GroupChatScreen = ({ route, navigation }) => {
   const { chatName } = route.params;
+  const [messages, setMessages] = useState(initialMessages);
+  const [inputText, setInputText] = useState('');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [participants] = useState(initialParticipants);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: chatName,
+      headerRight: () => (
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Icon
+            name="menu"
+            size={25}
+            color="black"
+            style={{ marginRight: 15 }}
+            onPress={() => setIsModalVisible(true)} // 메뉴 버튼을 클릭하면 모달을 표시
+          />
+        </View>
+      ),
+    });
+  }, [navigation, chatName]);
+
+  const sendMessage = () => {
+    if (inputText.trim().length > 0) {
+      const newMessage = {
+        id: (messages.length + 1).toString(),
+        text: inputText,
+        isMine: true,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages([...messages, newMessage]);
+      setInputText('');
+    }
+  };
 
   const renderItem = ({ item }) => (
     <View style={[styles.messageContainer, item.isMine ? styles.myMessageContainer : styles.otherMessageContainer]}>
       {!item.isMine && <Image source={require('../assets/circle_logo.png')} style={styles.profileImage} />}
       <View>
         {!item.isMine && <Text style={styles.senderName}>{item.sender}</Text>}
-        {item.isMine && (
-          <TouchableOpacity>
-            <Text style={styles.spellCheckButton}>맞춤법 수정하기</Text>
-          </TouchableOpacity>
-        )}
         <View style={[styles.bubbleContainer, item.isMine ? styles.myBubbleContainer : styles.otherBubbleContainer]}>
           <View style={[styles.bubble, item.isMine ? styles.myBubble : styles.otherBubble]}>
             <Text style={item.isMine ? styles.myMessageText : styles.otherMessageText}>{item.text}</Text>
@@ -40,11 +77,22 @@ export const GroupChatScreen = ({ route }) => {
         style={styles.chatList}
       />
       <View style={styles.inputContainer}>
-        <TextInput style={styles.input} placeholder="메시지를 입력하세요." />
-        <TouchableOpacity style={styles.sendButton}>
+        <TextInput
+          style={styles.input}
+          placeholder="메시지를 입력하세요."
+          value={inputText}
+          onChangeText={setInputText}
+          onSubmitEditing={sendMessage}
+        />
+        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
           <Text style={styles.sendButtonText}>전송</Text>
         </TouchableOpacity>
       </View>
+      <ParticipantModal
+        isVisible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        participants={participants}
+      />
     </View>
   );
 };
@@ -119,12 +167,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 2,
   },
-  spellCheckButton: {
-    color: '#9291A6',
-    textDecorationLine: 'underline',
-    alignSelf: 'flex-start',
-    marginBottom: 5,
-  },
   inputContainer: {
     flexDirection: 'row',
     padding: 10,
@@ -165,5 +207,3 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 });
-
-export default GroupChatScreen;
