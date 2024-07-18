@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity } from 'react-native';
 import { Icon } from 'react-native-elements';
-import ParticipantModal from './ParticipantModal'; // ParticipantModal을 import
+import ParticipantModal from './ParticipantModal'; 
 
 const initialMessages = [
   { id: '1', text: '안녕하세요!', sender: 'AAA', isMine: false, time: '오전 10:00' },
