@@ -75,7 +75,7 @@ export const infoBoxStyles = StyleSheet.create({
     boxContainer: {
         backgroundColor: '#ffffff',
         borderRadius: 10,
-        marginHorizontal: 15
+        marginHorizontal: 40
     },
     boxTitleContiner: {
         backgroundColor: '#5678F0',

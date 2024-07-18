@@ -49,7 +49,7 @@ export default class InfoTableBox extends Component {
     }
     render() {
         return (
-            <View style={infoBoxStyles.boxContainer}>
+            <View style={{...infoBoxStyles.boxContainer, ...this.props.style}}>
                 <View style={infoBoxStyles.boxTitleContiner}>
                     <Text style={infoBoxStyles.boxTitleText}>{this.props.title}</Text>
                 </View>

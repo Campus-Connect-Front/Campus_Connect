@@ -23,7 +23,7 @@ export const BoardMatchingScreen = () => {
         return null;
     }
     return (
-        <View style={{ flex: 1, paddingHorizontal: 25, backgroundColor: '#EBEDF6' }}>
+        <View style={{ flex: 1, backgroundColor: '#EBEDF6' }}>
             <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={style.TitleText}>Campus</Text>
                 <Text style={style.TitleText}>Connect!</Text>
