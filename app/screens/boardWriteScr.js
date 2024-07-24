@@ -3,7 +3,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { Text, View, StyleSheet, TextInput, TouchableOpacity, Platform, Alert } from 'react-native';
 import { useFonts } from 'expo-font';
 import { useEffect, useState } from 'react';
-import { ScrollView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import DropDownPicker from 'react-native-dropdown-picker';
 import SingleSelectButton from '../components/SingleSelectButton';
 import MultiSelectButton from '../components/MultiSelectButton';
@@ -46,6 +46,14 @@ export const BoardWriteScreen = ({ navigation }) => {
     if (!loaded && !error) {
         return null;
     }
+    useEffect(() => {
+        navigation.setOptions({
+            headerTitle: '',
+            headerBackImage: () => (
+                <AntDesign name="close" size={24} color="#CACACA" />
+            )
+        });
+    }, [navigation]);
 
     const CreateStudy = () => {
         if (language == null) {
@@ -155,47 +163,50 @@ export const BoardWriteScreen = ({ navigation }) => {
                     keyboardType='number-pad'
                     placeholder='채팅방 정원을 입력해 주세요. (2~10)' />
             </View>
-            <ScrollView>
-                <TextInput
-                    value={title}
-                    onChangeText={(text) => { setTitle(text) }}
-                    style={{ marginHorizontal: 25, marginTop: 18, ...style.TitleText }}
-                    placeholder='게시글 제목을 입력해 주세요.' />
-                <View style={horizontalLineStyle} />
-                <View style={{ marginHorizontal: 25 }}>
+            <GestureHandlerRootView>
+                <ScrollView style={{ height: '60%' }}>
                     <TextInput
-                        value={content}
-                        onChangeText={(text) => { setContent(text) }}
-                        style={{ textAlignVertical: 'top', minHeight: 300, ...style.ContentText }}
-                        multiline={true}
-                        placeholder='스터디 내용을 입력해 주세요.' />
-                </View>
-                <View style={{ marginHorizontal: 25 }}>
-                    <Text style={{ ...style.InfoText }}>요일 선택</Text>
-                    <MultiSelectButton
-                        count={7}
-                        textArray={['월', '화', '수', '목', '금', '토', '일']}
-                        getSelected={setSelectedDays}
-                        selectedButtonColor="#000000"
-                        selectedTextColor="#ffffff"
-                        containerStyle={{ flexDirection: 'row', marginTop: 5, marginBottom: 10 }}
-                        buttonStyle={{ width: 37, height: 37, marginLeft: 5, ...selectButtonStyle.container }}
-                        textStyle={selectButtonStyle.text}
-                    />
-                    <Text style={{ marginTop: 15, ...style.InfoText }}>방식</Text>
-                    <SingleSelectButton
-                        count={2}
-                        textArray={['대면', '비대면']}
-                        getSelected={setSelectedWay}
-                        selectedButtonColor="#000000"
-                        selectedTextColor="#ffffff"
-                        containerStyle={{ flexDirection: 'row', marginTop: 5, marginBottom: 10 }}
-                        buttonStyle={{ width: 66, height: 37, marginLeft: 5, ...selectButtonStyle.container }}
-                        textStyle={selectButtonStyle.text}
-                    />
-                </View>
-                <DoneButton containerStyle={{ marginTop: 10 }} text='스터디 생성' onPress={() => CreateStudy()} />
-            </ScrollView>
+                        value={title}
+                        onChangeText={(text) => { setTitle(text) }}
+                        style={{ marginHorizontal: 25, marginTop: 18, ...style.TitleText }}
+                        placeholder='게시글 제목을 입력해 주세요.' />
+                    <View style={horizontalLineStyle} />
+                    <View style={{ marginHorizontal: 25 }}>
+                        <TextInput
+                            value={content}
+                            onChangeText={(text) => { setContent(text) }}
+                            style={{ textAlignVertical: 'top', minHeight: 300, ...style.ContentText }}
+                            multiline={true}
+                            placeholder='스터디 내용을 입력해 주세요.' />
+                    </View>
+                    <View style={{ marginHorizontal: 25 }}>
+                        <Text style={{ ...style.InfoText }}>요일 선택</Text>
+                        <MultiSelectButton
+                            count={7}
+                            textArray={['월', '화', '수', '목', '금', '토', '일']}
+                            getSelected={setSelectedDays}
+                            selectedButtonColor="#000000"
+                            selectedTextColor="#ffffff"
+                            containerStyle={{ flexDirection: 'row', marginTop: 5, marginBottom: 10 }}
+                            buttonStyle={{ width: 37, height: 37, marginLeft: 5, ...selectButtonStyle.container }}
+                            textStyle={selectButtonStyle.text}
+                        />
+                        <Text style={{ marginTop: 15, ...style.InfoText }}>방식</Text>
+                        <SingleSelectButton
+                            count={2}
+                            textArray={['대면', '비대면']}
+                            getSelected={setSelectedWay}
+                            selectedButtonColor="#000000"
+                            selectedTextColor="#ffffff"
+                            containerStyle={{ flexDirection: 'row', marginTop: 5, marginBottom: 10 }}
+                            buttonStyle={{ width: 66, height: 37, marginLeft: 5, ...selectButtonStyle.container }}
+                            textStyle={selectButtonStyle.text}
+                        />
+                    </View>
+                    <DoneButton containerStyle={{ marginTop: 10, marginBottom: 15 }} text='스터디 생성' onPress={() => CreateStudy()} />
+                </ScrollView>
+            </GestureHandlerRootView>
+
             <Toast config={toastConfig} />
         </View>
     )

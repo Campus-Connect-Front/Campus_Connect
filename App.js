@@ -4,14 +4,14 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ChatBotScreen } from './app/screens/chatBotScr';
-import { BoardScreen } from './app/screens/boardScr';
+import { BoardScreen, BoardSearchPage } from './app/screens/boardScr';
 import { ChatListScreen } from './app/screens/chatListScr';
 import { MatchingScreen } from './app/screens/matchingScr';
 import { MyPageScreen } from './app/screens/myPageScr';
 import { OneChatScreen } from './app/screens/OneChatscreen';
 import { GroupChatScreen } from './app/screens/GroupChatscreen';
-
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { BoardDetailScreen } from './app/screens/boardDetailScr';
+import { BoardWriteScreen } from './app/screens/boardWriteScr';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -37,11 +37,11 @@ const TempLoginScreen = ({ navigation }) => {
   )
 }
 
-const MainTabNavigator = () => {
+const MainTabNavigator = ({ navigation }) => {
   return (
     <Tab.Navigator>
       <Tab.Screen options={{ headerShown: false }} name='ChatBot' component={ChatBotScreen} />
-      <Tab.Screen options={{ headerShown: false }} name="Board" component={BoardScreen} />
+      <Tab.Screen options={{ headerShown: false }} name="Board">{() => (<BoardScreen parentNav={navigation} />)}</Tab.Screen>
       <Tab.Screen options={{ headerShown: false }} name="Matching" component={MatchingScreen} />
       <Tab.Screen options={{ headerShown: false }} name="ChatList" component={ChatListScreen} />
       <Tab.Screen options={{ headerShown: false }} name="MyPage" component={MyPageScreen} />
@@ -77,6 +77,19 @@ export default function App() {
           name='GroupChat'
           component={GroupChatScreen}
           options={{ headerShown: true }}
+        />
+        <Stack.Screen
+          name='BoardDetail'
+          component={BoardDetailScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name='BoardWrite'
+          component={BoardWriteScreen}
+        />
+        <Stack.Screen
+          name='BoardSearch'
+          component={BoardSearchPage}
         />
       </Stack.Navigator>
     </NavigationContainer>

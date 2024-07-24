@@ -9,14 +9,15 @@ import MultiSelectButton from '../components/MultiSelectButton';
 import Toast from 'react-native-toast-message';
 import { horizontalLineStyle, selectButtonStyle, toastConfig } from '../assets/styles/globalStyles';
 import DoneButton from '../components/DoneButton';
+import { AntDesign } from '@expo/vector-icons';
 
 const removeSpace = text => (text.replace(/\s/g, ''))
 
-export const BoardEditScreen = ({ route, navigation }) => {
-    const { id, title, content, language, recruit, frequency, way, days } = route.params;
+export const BoardEditScreen = ({ item, navigation }) => {
+    const { id, title, content, language, recruit, frequency, way, days } = item;
 
-    const [editTitle, setEditTitle] = useState(route.params.title);
-    const [editContent, setEditContent] = useState(route.params.content);
+    const [editTitle, setEditTitle] = useState(item.title);
+    const [editContent, setEditContent] = useState(item.content);
     const [loaded, error] = useFonts({
         'Pretendard-Bold': require('../assets/fonts/Pretendard-Bold.ttf'),
         'Pretendard-Regular': require('../assets/fonts/Pretendard-Regular.ttf')
@@ -31,6 +32,15 @@ export const BoardEditScreen = ({ route, navigation }) => {
     if (!loaded && !error) {
         return null;
     }
+
+    useEffect(() => {
+        navigation.setOptions({
+            headerTitle: '',
+            headerBackImage: () => (
+                <AntDesign name="close" size={24} color="#CACACA" />
+            )
+        });
+    }, [navigation]);
 
     const EditStudy = () => {
         if (removeSpace(editTitle) == '') {
@@ -91,7 +101,7 @@ export const BoardEditScreen = ({ route, navigation }) => {
                         count={7}
                         textArray={['월', '화', '수', '목', '금', '토', '일']}
                         selectedButtonColor="#666666"
-                        selectedTextColor="#cecece"
+                        selectedTextColor="#ffffff"
                         containerStyle={{ flexDirection: 'row', marginTop: 5, marginBottom: 10 }}
                         buttonStyle={{ width: 37, height: 37, marginLeft: 5, ...selectButtonStyle.container }}
                         textStyle={{ color: '#848484', ...selectButtonStyle.text }}
@@ -103,7 +113,7 @@ export const BoardEditScreen = ({ route, navigation }) => {
                         count={2}
                         textArray={['대면', '비대면']}
                         selectedButtonColor="#666666"
-                        selectedTextColor="#cecece"
+                        selectedTextColor="#ffffff"
                         containerStyle={{ flexDirection: 'row', marginTop: 5, marginBottom: 10 }}
                         buttonStyle={{ width: 66, height: 37, marginLeft: 5, ...selectButtonStyle.container }}
                         textStyle={{ color: '#848484', ...selectButtonStyle.text}}

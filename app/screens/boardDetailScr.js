@@ -7,6 +7,13 @@ import { Feather } from '@expo/vector-icons';
 import DoneButton from '../components/DoneButton';
 import { alertButtonStyle, horizontalLineStyle } from '../assets/styles/globalStyles';
 import AlertModal from '../components/AlertModal';
+import { Ionicons } from '@expo/vector-icons';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { BoardMatchingScreen } from './boardMatchingScr';
+import { BoardEditScreen } from './boardEditScr';
+
+const Stack = createStackNavigator();
 
 const DayBox = ({ Day }) => {
     return (
@@ -31,33 +38,19 @@ const DayBox = ({ Day }) => {
     )
 }
 
-export const BoardDetailScreen = ({ route, navigation }) => {
+const BoardDetail = ({ parentNav, item, route, navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const isAuthor = true;
-    const [loaded, error] = useFonts({
-        'Pretendard-Bold': require('../assets/fonts/Pretendard-Bold.ttf'),
-        'Pretendard-Regular': require('../assets/fonts/Pretendard-Regular.ttf')
-    });
+    const { id, title, content, language, recruit, frequency, way, days } = item;
 
-    useEffect(() => {
-        if (loaded || error) {
-            SplashScreen.hideAsync();
-        }
-    }, [loaded, error]);
-
-    if (!loaded && !error) {
-        return null;
-    }
-
-    const deletePost = ({navigation}) => {
+    const deletePost = ({ parentNav }) => {
         console.log('delete');
         setModalVisible(false);
-        navigation.pop();
+        parentNav.pop();
     }
 
-    const { id, title, content, language, recruit, frequency, way, days } = route.params;
     return (
-        <View style={{ flex: 1, backgroundColor: '#ffffff', paddingBottom: 25 }}>
+        <View style={{ flex: 1, backgroundColor: '#ffffff', paddingBottom: 25, paddingTop: 70 }}>
             <View style={{ marginHorizontal: 25 }}>
                 <Text style={{ marginTop: 5, ...boardDetailStyle.LanguageText }}>{language}</Text>
                 <Text style={{ marginTop: 5, ...boardDetailStyle.TitleText }}>{title}</Text>
@@ -86,13 +79,13 @@ export const BoardDetailScreen = ({ route, navigation }) => {
             {
                 (recruit == 2) ?
                     <DoneButton text='채팅 입장하기' disablePress={true} />
-                    : <DoneButton text='채팅 입장하기' onPress={() => navigation.navigate('Match')} />
+                    : <DoneButton text='채팅 입장하기' onPress={() => navigation.navigate('Match', parentNav, route)} />
             }
             {
                 (isAuthor) ?
-                    <View style={{ position: 'absolute', top: 5, right: 0, flexDirection: 'row' }}>
+                    <View style={{ position: 'absolute', top: 45, right: 0, flexDirection: 'row' }}>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('Edit', route.params)}
+                            onPress={() => navigation.navigate('Edit', item)}
                             style={{ paddingHorizontal: 7 }}>
                             <Feather name="edit-3" size={24} color="#787878" />
                         </TouchableOpacity>
@@ -104,7 +97,7 @@ export const BoardDetailScreen = ({ route, navigation }) => {
                     </View>
                     : null
             }
-            <AlertModal 
+            <AlertModal
                 modalVisible={modalVisible}
                 setModalVisible={setModalVisible}
                 title='게시글 삭제'
@@ -118,11 +111,50 @@ export const BoardDetailScreen = ({ route, navigation }) => {
                     {
                         text: '삭제',
                         style: alertButtonStyle.destructive,
-                        onPress: () => { deletePost({navigation}) }
+                        onPress: () => { deletePost({ parentNav }) }
                     }
                 ]}
             />
+            <TouchableOpacity
+                onPress={() => parentNav.pop()}
+                style={{ position:'absolute', top: 40, left: 15 }}>
+                <Ionicons name="chevron-back" size={24} color="black" />
+            </TouchableOpacity>
         </View>
+    )
+}
+
+export const BoardDetailScreen = ({ route, navigation }) => {
+    const [loaded, error] = useFonts({
+        'Pretendard-Bold': require('../assets/fonts/Pretendard-Bold.ttf'),
+        'Pretendard-Regular': require('../assets/fonts/Pretendard-Regular.ttf')
+    });
+
+    useEffect(() => {
+        if (loaded || error) {
+            SplashScreen.hideAsync();
+        }
+    }, [loaded, error]);
+
+    if (!loaded && !error) {
+        return null;
+    }
+
+    return (
+        <NavigationContainer independent={true}>
+            <Stack.Navigator initialRouteName='Detail'>
+                <Stack.Screen
+                    name='Detail'
+                    options={{ headerShown: false }}
+                >{(props) => <BoardDetail parentNav={navigation} item={route.params} {...props} />}</Stack.Screen>
+                <Stack.Screen
+                    name='Edit'
+                >{(props) => <BoardEditScreen item={route.params} {...props} />}</Stack.Screen>
+                <Stack.Screen
+                    name='Match'
+                >{(props) => <BoardMatchingScreen parentNav={navigation} {...props} />}</Stack.Screen>
+            </Stack.Navigator>
+        </NavigationContainer>
     )
 }
 

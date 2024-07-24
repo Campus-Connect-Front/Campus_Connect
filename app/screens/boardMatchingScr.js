@@ -6,8 +6,9 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { infoBoxStyles } from '../assets/styles/globalStyles';
 import DoneButton from '../components/DoneButton';
 import InfoTableBox from '../components/InfoTableBox';
+import { Ionicons } from '@expo/vector-icons';
 
-export const BoardMatchingScreen = () => {
+export const BoardMatchingScreen = ({parentNav, navigation}) => {
     const [loaded, error] = useFonts({
         'Pretendard-Bold': require('../assets/fonts/Pretendard-Bold.ttf'),
         'Pretendard-Regular': require('../assets/fonts/Pretendard-Regular.ttf')
@@ -22,15 +23,24 @@ export const BoardMatchingScreen = () => {
     if (!loaded && !error) {
         return null;
     }
+    useEffect(() => {
+        navigation.setOptions({
+            headerTitle: '',
+            headerStyle: { backgroundColor: '#EBEDF6' },
+            headerBackImage: () => (
+                <View style={{ backgroundColor: '#ffffff', borderRadius: 12, padding: 7 }}>
+                    <Ionicons name="chevron-back" size={24} color="black" />
+                </View>
+            ),
+        });
+    }, [navigation]);
     return (
         <View style={{ flex: 1, backgroundColor: '#EBEDF6' }}>
-            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={style.TitleText}>Campus</Text>
-                <Text style={style.TitleText}>Connect!</Text>
-                <Image style={{ marginTop: 20 }} source={require('../assets/images/circle_logo_image.png')} />
-            </View>
-            <View style={{ marginTop: 30 }}>
-                <InfoTableBox 
+            <View style={{ flex: 1, justifyContent: 'center' }}>
+                <Text style={{ alignSelf: 'center', ...style.TitleText }}> {'Campus\nConnect!'} </Text>
+                <Image style={{ marginTop: 20, alignSelf: 'center' }} source={require('../assets/images/circle_logo_image.png')} />
+                <InfoTableBox
+                    style={{ marginTop: 50 }}
                     title='스터디 정보'
                     tableInfos={[
                         {
@@ -43,13 +53,17 @@ export const BoardMatchingScreen = () => {
                         },
                         {
                             title: '스터디 언어',
-                            titleStyle: {fontSize: 11},
+                            titleStyle: { fontSize: 11 },
                             info: '영어'
                         }
                     ]}
                 />
             </View>
-            <DoneButton text='채팅 시작하기' containerStyle={{ marginTop: 30, marginBottom: 70 }} />
+            <View style={{ marginTop: 20, marginBottom: '20%' }}>
+                <DoneButton
+                    text='채팅 시작하기'
+                />
+            </View>
         </View>
     )
 }
