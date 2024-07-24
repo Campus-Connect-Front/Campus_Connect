@@ -10,11 +10,12 @@ import { useFonts } from 'expo-font';
 import { useEffect, useState, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import AlertModal from '../components/AlertModal';
-import { alertButtonStyle } from '../assets/styles/globalStyles';
+import { alertButtonStyle, miniLanguageBox } from '../assets/styles/globalStyles';
 
 const MatchingWaitScreen = ({ navigation }) => {
 
     const [modalVisible, setModalVisible] = useState(false);
+    const [failedMatch, setfailedMatch] = useState(false);
     const timeRef = useRef(null);
 
     const editMyInfo = () => {
@@ -22,7 +23,11 @@ const MatchingWaitScreen = ({ navigation }) => {
     }
 
     const startMatching = () => {
+        setfailedMatch(false);
         setModalVisible(true);
+        // setTimeout(() => {
+        //     failedMatching();
+        // }, 1000);
         timeRef.current = setTimeout(() => {
             setModalVisible(false);
             navigation.navigate('Done');
@@ -31,6 +36,12 @@ const MatchingWaitScreen = ({ navigation }) => {
 
     const stopMatching = () => {
         clearTimeout(timeRef.current);
+        setModalVisible(false);
+    }
+
+    const failedMatching = () => {
+        clearTimeout(timeRef.current);
+        setfailedMatch(true);
     }
 
     return (
@@ -50,7 +61,16 @@ const MatchingWaitScreen = ({ navigation }) => {
                         },
                         {
                             title: '희망 학습 언어',
-                            info: '컴포넌트 추가',
+                            info: () => (
+                                <View style={{ flexDirection: 'row' }}>
+                                    <View style={miniLanguageBox.box}>
+                                        <Text style={miniLanguageBox.text}>영어</Text>
+                                    </View>
+                                    <View style={miniLanguageBox.box}>
+                                        <Text style={miniLanguageBox.text}>일본어</Text>
+                                    </View>
+                                </View>
+                            ),
                             titleStyle: { fontSize: 11 }
                         }
                     ]}
@@ -68,17 +88,19 @@ const MatchingWaitScreen = ({ navigation }) => {
             <AlertModal
                 modalVisible={modalVisible}
                 setModalVisible={setModalVisible}
-                title='채팅 상대 매칭'
-                message='매칭 중...'
                 showCloseButton={false}
-                alertButtons={[
-                    {
-                        text: '취소',
-                        style: alertButtonStyle.destructive,
-                        onPress: () => { setModalVisible(false); stopMatching(); }
-                    }
-                ]}
-                onRequestClose={() => { stopMatching() }}
+                title={(failedMatch) ? '매칭 실패' : '채팅 상대 매칭'}
+                message={(failedMatch) ? '매칭에 실패했습니다.' : '매칭 중...'}
+                alertButtons={(failedMatch) ? [{
+                    text: '확인',
+                    style: alertButtonStyle.default,
+                    onPress: () => { setModalVisible(false); }
+                }] : [{
+                    text: '취소',
+                    style: alertButtonStyle.destructive,
+                    onPress: () => { setModalVisible(false); stopMatching(); }
+                }]}
+                onRequestClose={() => { (failedMatch) ? setModalVisible(false) : stopMatching(); }}
             />
         </View>
     )
@@ -101,11 +123,17 @@ const MatchingCompleteScreen = () => {
                     tableInfos={[
                         {
                             title: '국적',
-                            info: '한국'
+                            info: '미국'
                         },
                         {
                             title: '희망 학습 언어',
-                            info: '컴포넌트 추가',
+                            info: () => (
+                                <View style={{ flexDirection: 'row' }}>
+                                    <View style={miniLanguageBox.box}>
+                                        <Text style={miniLanguageBox.text}>한국어</Text>
+                                    </View>
+                                </View>
+                            ),
                             titleStyle: { fontSize: 11 }
                         }
                     ]}
