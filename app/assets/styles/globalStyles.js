@@ -15,7 +15,7 @@ export const shadowStyle = {
         },
         android: { elevation: 5 }
     })
-}
+};
 
 export const alertButtonStyle = StyleSheet.create({
     destructive: {
@@ -23,6 +23,22 @@ export const alertButtonStyle = StyleSheet.create({
     },
     default: {
         backgroundColor: '#7F9AF5',
+    }
+});
+
+export const miniLanguageBox = StyleSheet.create({
+    box: {
+        backgroundColor: '#ffffff',
+        borderRadius: 20,
+        paddingVertical: 5,
+        paddingHorizontal: 15,
+        marginRight: 10,
+        ...shadowStyle
+    },
+    text: {
+        color: '#5678F0',
+        fontFamily: 'Pretendard-Bold',
+        fontSize: 11
     }
 })
 
