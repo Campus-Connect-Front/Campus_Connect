@@ -1,13 +1,14 @@
 import React, { useLayoutEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
 import { Icon } from 'react-native-elements';
+import EmojiSelector, { Categories } from 'react-native-emoji-selector';
 import ParticipantModal from './ParticipantModal'; 
 
 const initialMessages = [
-  { id: '1', text: '안녕하세요!', sender: 'AAA', isMine: false, time: '오전 10:00' },
-  { id: '2', text: '안녕하세요! 반갑습니다.', isMine: true, time: '오전 10:01' },
-  { id: '3', text: '저도 반갑습니다.', sender: 'BBB', isMine: false, time: '오전 10:02' },
-  { id: '4', text: '모두 안녕하세요!', sender: 'CCC', isMine: false, time: '오전 10:03' },
+  { id: '1', text: 'Hi!', sender: 'AAA', isMine: false, time: '오전 10:00' },
+  { id: '2', text: 'Hello', isMine: true, time: '오전 10:01' },
+  { id: '3', text: 'Good Morning', sender: 'BBB', isMine: false, time: '오전 10:02' },
+  { id: '4', text: 'Nice to meet you', sender: 'CCC', isMine: false, time: '오전 10:03' },
 ];
 
 const initialParticipants = [
@@ -21,6 +22,7 @@ export const GroupChatScreen = ({ route, navigation }) => {
   const [messages, setMessages] = useState(initialMessages);
   const [inputText, setInputText] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
   const [participants] = useState(initialParticipants);
 
   useLayoutEffect(() => {
@@ -33,7 +35,7 @@ export const GroupChatScreen = ({ route, navigation }) => {
             size={25}
             color="black"
             style={{ marginRight: 15 }}
-            onPress={() => setIsModalVisible(true)} // 메뉴 버튼을 클릭하면 모달을 표시
+            onPress={() => setIsModalVisible(true)} 
           />
         </View>
       ),
@@ -69,14 +71,31 @@ export const GroupChatScreen = ({ route, navigation }) => {
   );
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
       <FlatList
         data={messages}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         style={styles.chatList}
       />
+      {isEmojiPickerVisible && (
+        <EmojiSelector
+          category={Categories.ALL}
+          onEmojiSelected={emoji => setInputText(inputText + emoji)}
+          showSearchBar={false}
+          columns={8}
+        />
+      )}
       <View style={styles.inputContainer}>
+        <TouchableOpacity onPress={() => setIsEmojiPickerVisible(!isEmojiPickerVisible)}>
+          <Icon
+            name="emoji-emotions"
+            type="material"
+            color="#7F9AF5"
+            size={24}
+            style={styles.emojiButton}
+          />
+        </TouchableOpacity>
         <TextInput
           style={styles.input}
           placeholder="메시지를 입력하세요."
@@ -85,7 +104,12 @@ export const GroupChatScreen = ({ route, navigation }) => {
           onSubmitEditing={sendMessage}
         />
         <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <Text style={styles.sendButtonText}>전송</Text>
+          <Icon
+            name="send"
+            type="material"
+            color="#7F9AF5"
+            size={24}
+          />
         </TouchableOpacity>
       </View>
       <ParticipantModal
@@ -93,7 +117,7 @@ export const GroupChatScreen = ({ route, navigation }) => {
         onClose={() => setIsModalVisible(false)}
         participants={participants}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -184,11 +208,11 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     marginLeft: 10,
-    backgroundColor: '#5678F0',
-    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 15,
+  },
+  emojiButton: {
+    marginRight: 10,
   },
   sendButtonText: {
     color: '#fff',
