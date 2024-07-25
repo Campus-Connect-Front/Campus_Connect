@@ -1,7 +1,8 @@
 import React, { useLayoutEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
 import { Icon } from 'react-native-elements'; 
 import { useNavigation } from '@react-navigation/native';
+import EmojiSelector, { Categories } from 'react-native-emoji-selector';
 import { ReportScr } from './reportScr';
 import { ExitModal } from './exitModal';
 
@@ -14,6 +15,7 @@ export const OneChatScreen = ({ route }) => {
     { id: '2', text: '안녕하세요! 반갑습니다.', isMine: true, time: '오전 10:01' },
   ]);
   const [inputMessage, setInputMessage] = useState('');
+  const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
   const [isReportModalVisible, setIsReportModalVisible] = useState(false);
   const [isExitModalVisible, setIsExitModalVisible] = useState(false);
 
@@ -26,17 +28,17 @@ export const OneChatScreen = ({ route }) => {
             name="report" 
             size={25} 
             color="black" 
-            style={{ marginRight: 30 }} 
+            containerStyle={{ marginRight: 10 }} 
             onPress={() => setIsReportModalVisible(true)} 
           />
           <Icon 
             name="exit-to-app" 
             size={25} 
             color="black" 
-            style={{ marginLeft: 30 }} 
+            containerStyle={{ marginLeft: 10 }} 
             onPress={() => setIsExitModalVisible(true)} 
           />
-      </View>
+        </View>
       ),
     });
   }, [navigation, chatName]);
@@ -75,20 +77,36 @@ export const OneChatScreen = ({ route }) => {
   };
 
   const handleExit = () => {
-    console.log('탈퇴하기 버튼 클릭됨');
     setIsExitModalVisible(false);
-    // 여기에 실제 탈퇴 로직을 추가합니다.
+    // 탈퇴로직
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
       <FlatList
         data={messages}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         style={styles.chatList}
       />
+      {isEmojiPickerVisible && (
+        <EmojiSelector
+          category={Categories.ALL}
+          onEmojiSelected={emoji => setInputMessage(inputMessage + emoji)}
+          showSearchBar={false}
+          columns={8}
+        />
+      )}
       <View style={styles.inputContainer}>
+        <TouchableOpacity onPress={() => setIsEmojiPickerVisible(!isEmojiPickerVisible)}>
+          <Icon
+            name="emoji-emotions"
+            type="material"
+            color="#7F9AF5"
+            size={24}
+            style={styles.emojiButton}
+          />
+        </TouchableOpacity>
         <TextInput
           style={styles.input}
           placeholder="메시지를 입력하세요."
@@ -96,7 +114,12 @@ export const OneChatScreen = ({ route }) => {
           onChangeText={setInputMessage}
         />
         <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-          <Text style={styles.sendButtonText}>전송</Text>
+          <Icon
+            name="send"
+            type="material"
+            color="#7F9AF5"
+            size={24}
+          />
         </TouchableOpacity>
       </View>
       <ReportScr
@@ -109,7 +132,7 @@ export const OneChatScreen = ({ route }) => {
         onClose={() => setIsExitModalVisible(false)}
         onExit={handleExit}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -117,7 +140,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#E5E5E5',
-    paddingTop: 20,
   },
   chatList: {
     flex: 1,
@@ -171,6 +193,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderTopWidth: 1,
     borderColor: '#ddd',
+    alignItems: 'center',  
   },
   input: {
     flex: 1,
@@ -183,15 +206,11 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     marginLeft: 10,
-    backgroundColor: '#5678F0',
-    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 15,
   },
-  sendButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  emojiButton: {
+    marginRight: 10,
   },
   myMessageTime: {
     color: '#9291A6',
