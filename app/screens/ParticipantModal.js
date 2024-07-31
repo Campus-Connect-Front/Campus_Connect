@@ -3,12 +3,12 @@ import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react
 import Modal from 'react-native-modal';
 import { Icon } from 'react-native-elements';
 import { ReportScr } from './reportScr';
-import { ExitModal } from './exitModal'; // ExitModal 컴포넌트 추가
+import { ExitModal } from './exitModal';
 
-export const ParticipantModal = ({ isVisible, onClose, participants }) => {
+export const ParticipantModal = ({ isVisible, onClose, participants, userName }) => {
   const [isReportVisible, setIsReportVisible] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState(null);
-  const [isExitVisible, setIsExitVisible] = useState(false); // ExitModal 상태 추가
+  const [isExitVisible, setIsExitVisible] = useState(false);
 
   const handleReportPress = (participant) => {
     setSelectedParticipant(participant);
@@ -27,7 +27,7 @@ export const ParticipantModal = ({ isVisible, onClose, participants }) => {
   };
 
   const handleExitPress = () => {
-    setIsExitVisible(true); // ExitModal 표시
+    setIsExitVisible(true);
   };
 
   const handleExitClose = () => {
@@ -37,16 +37,21 @@ export const ParticipantModal = ({ isVisible, onClose, participants }) => {
   const handleExitConfirm = () => {
     console.log('User exited the chat');
     setIsExitVisible(false);
-    onClose(); // 모달 닫기
+    onClose();
   };
 
   const renderParticipant = ({ item }) => (
     <View style={styles.participantContainer}>
       <Image source={item.profileImage} style={styles.participantImage} />
-      <Text style={styles.participantName}>{item.name}</Text>
-      <TouchableOpacity onPress={() => handleReportPress(item)}>
-        <Icon name="report" size={20} color="#333" style={styles.importIcon} />
-      </TouchableOpacity>
+      <Text style={styles.participantName}>
+        {item.name === userName && <Text style={styles.myLabel}>나 </Text>}
+        {item.name}
+      </Text>
+      {item.name !== userName && (
+        <TouchableOpacity onPress={() => handleReportPress(item)}>
+          <Icon name="report" size={20} color="#333" style={styles.importIcon} />
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -139,6 +144,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#333',
     padding: 5,
     borderRadius: 5,
+  },
+  myLabel: {
+    color: '#5678F0',
+    fontWeight: 'bold',
   },
 });
 
