@@ -7,7 +7,6 @@ export default function LoginScreen({ navigation }) {
 
   const handleLogin = () => {
     // 로그인 로직 추가
-    // 로그인 성공 시 Home으로 이동
     if (studentId && password) {
       navigation.navigate('Main');
     }
