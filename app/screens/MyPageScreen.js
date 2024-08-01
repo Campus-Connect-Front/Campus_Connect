@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+import InfoTableBox from '../components/InfoTableBox';
+import { miniLanguageBox } from '../assets/styles/globalStyles';
 
 export default function MyPageScreen({ navigation }) {
   const defaultProfile = {
@@ -107,13 +109,47 @@ export default function MyPageScreen({ navigation }) {
           <Text style={styles.infoText}>학번: {profile.studentId}</Text>
         </View>
       </View>
-      <View style={styles.myInfoContainer}>
-        <Text style={styles.myInfoTitle}>My Info</Text>
-        <Text style={styles.infoText}>국적: {profile.nationality}</Text>
-        <Text style={styles.infoText}>구사 가능한 언어: {profile.languages.join(', ')}</Text>
-        <Text style={styles.infoText}>희망 학습 언어: {profile.learningLanguages.join(', ')}</Text>
-        <Button title="변경하기" onPress={() => navigation.navigate('EditMyInfo', { profile })} />
-      </View>
+
+      <InfoTableBox
+        style={{ marginTop: 20, width: '95%', alignSelf: 'center', }}
+        title='내 정보'
+        tableInfos={[
+          {
+            title: '국적',
+            info: profile.nationality,
+          },
+          {
+            title: '구사 가능 언어',
+            titleStyle: { fontSize: 12 },
+            info: () => (
+              <View style={{ flexDirection: 'row' }}>
+                {profile.languages.map((language, index) => (
+                  <View key={index} style={miniLanguageBox.box}>
+                    <Text style={miniLanguageBox.text}>{language}</Text>
+                  </View>
+                ))}
+              </View>
+            ),
+          },
+          {
+            title: '희망 학습 언어',
+            titleStyle: { fontSize: 12 },
+            info: () => (
+              <View style={{ flexDirection: 'row' }}>
+                {profile.learningLanguages.map((language, index) => (
+                  <View key={index} style={miniLanguageBox.box}>
+                    <Text style={miniLanguageBox.text}>{language}</Text>
+                  </View>
+                ))}
+              </View>
+            ),
+          },
+        ]}
+        showAdditionalButton={true}
+        buttonText='변경하기'
+        buttonOnPress={() => navigation.navigate('EditMyInfo', { profile })}
+      />
+
       <Image source={require('../assets/images/logo2.png')} style={styles.logo} />
       <TouchableOpacity onPress={handleLogout}>
         <Text style={styles.logout}>로그아웃하기</Text>
@@ -130,7 +166,6 @@ const styles = StyleSheet.create({
   },
   profileContainer: {
     flexDirection: 'row',
-    marginBottom: 20,
     alignItems: 'center',
   },
   profileImageContainer: {
@@ -181,17 +216,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: -10,
     marginBottom: 5,
-  },
-  myInfoContainer: {
-    padding: 16,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    marginBottom: 20,
-  },
-  myInfoTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
   },
   logo: {
     width: '50%',

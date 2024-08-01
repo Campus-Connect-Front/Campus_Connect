@@ -37,7 +37,15 @@ const MyPageStackNavigator = () => {
   return (
     <Stack.Navigator initialRouteName="MyPage">
       <Stack.Screen  name="MyPage" component={MyPageScreen} options={{ title: '마이페이지' }}/>
-      <Stack.Screen name="EditMyInfo" component={EditMyInfoScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="EditMyInfo" component={EditMyInfoScreen} options={({ navigation }) => ({
+        title: 'MyInfo 수정',
+        headerLeft: () => (
+        <TouchableOpacity style={styles.headerLeft} onPress={() => navigation.navigate('MyPage')}>
+          <Ionicons name="chevron-back" size={24} color="black" />
+        </TouchableOpacity>
+        ),
+      })} 
+      />
       <Stack.Screen name="MyInfo" component={MyInfoScreen} options={({ navigation }) => ({
           title: '내 정보',
           headerLeft: () => (
