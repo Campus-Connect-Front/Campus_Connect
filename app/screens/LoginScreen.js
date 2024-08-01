@@ -9,7 +9,7 @@ export default function LoginScreen({ navigation }) {
     // 로그인 로직 추가
     // 로그인 성공 시 Home으로 이동
     if (studentId && password) {
-      navigation.navigate('Home');
+      navigation.navigate('Main');
     }
   };
 
@@ -17,7 +17,7 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/logo.png')} style={styles.logo} resizeMode="contain" />
+      <Image source={require('../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
       <View style={styles.inputContainer}>
         <Text style={styles.fieldName}>아이디(학번)</Text>
         <TextInput

@@ -26,7 +26,7 @@ export default function SignupScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/logo.png')} style={styles.logo} resizeMode="contain" />
+      <Image source={require('../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
       <View style={styles.inputContainer}>
         <Text style={styles.fieldName}>학번</Text>
         <TextInput

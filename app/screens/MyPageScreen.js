@@ -90,11 +90,11 @@ export default function MyPageScreen({ navigation }) {
         <TouchableOpacity onPress={pickImage} style={styles.profileImageContainer}>
           <View style={styles.profileImageWrapper}>
             <Image
-              source={profileImage ? { uri: profileImage } : require('../assets/default-profile.png')}
+              source={profileImage ? { uri: profileImage } : require('../assets/images/default-profile.png')}
               style={styles.profileImage}
             />
           </View>
-          <Image source={require('../assets/edit-icon.png')} style={styles.editIcon} />
+          <Image source={require('../assets/images/edit-icon.png')} style={styles.editIcon} />
         </TouchableOpacity>
         <View style={styles.profileInfo}>
           <Text style={styles.university}>{profile.university}</Text>
@@ -114,7 +114,7 @@ export default function MyPageScreen({ navigation }) {
         <Text style={styles.infoText}>희망 학습 언어: {profile.learningLanguages.join(', ')}</Text>
         <Button title="변경하기" onPress={() => navigation.navigate('EditMyInfo', { profile })} />
       </View>
-      <Image source={require('../assets/logo2.png')} style={styles.logo} />
+      <Image source={require('../assets/images/logo2.png')} style={styles.logo} />
       <TouchableOpacity onPress={handleLogout}>
         <Text style={styles.logout}>로그아웃하기</Text>
       </TouchableOpacity>

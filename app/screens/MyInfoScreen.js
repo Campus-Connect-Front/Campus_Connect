@@ -78,7 +78,7 @@ const MyInfoScreen = ({ navigation }) => {
           </View>
         </TouchableOpacity>
       </View>
-      <Image source={require('../assets/logo2.png')} style={styles.logo} />
+      <Image source={require('../assets/images/logo2.png')} style={styles.logo} />
       <TouchableOpacity onPress={handleLogout}>
         <Text style={styles.withdraw}>탈퇴하기</Text>
       </TouchableOpacity>
