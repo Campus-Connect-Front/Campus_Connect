@@ -20,6 +20,8 @@ import SignupScreen from './app/screens/SignupScreen';
 import VerificationScreen from './app/screens/VerificationScreen';
 import AdditionalInfoScreen from './app/screens/AdditionalInfoScreen';
 
+import { Ionicons } from '@expo/vector-icons';
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -36,24 +38,23 @@ const MyPageStackNavigator = () => {
     <Stack.Navigator initialRouteName="MyPage">
       <Stack.Screen  name="MyPage" component={MyPageScreen} options={{ title: '마이페이지' }}/>
       <Stack.Screen name="EditMyInfo" component={EditMyInfoScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="EditProfile" component={EditProfileScreen} options={({ navigation }) => ({
-          title: '정보 변경',
-          headerLeft: () => (
-            <TouchableOpacity style={styles.headerLeft} onPress={() => navigation.navigate('MyInfo')}>
-              {/* <Image source={require('./assets/images/back.png')} style={styles.backIcon} /> */}
-            </TouchableOpacity>
-          ),
-        })} 
-      />
       <Stack.Screen name="MyInfo" component={MyInfoScreen} options={({ navigation }) => ({
           title: '내 정보',
           headerLeft: () => (
-            <TouchableOpacity style={styles.headerLeft} onPress={() => navigation.navigate('MyPage')}>
-              {/* <Image source={require('./assets/images/back.png')} style={styles.backIcon} /> */}
-            </TouchableOpacity>
+          <TouchableOpacity style={styles.headerLeft} onPress={() => navigation.navigate('MyPage')}>
+            <Ionicons name="chevron-back" size={24} color="black" />
+          </TouchableOpacity>
           ),
         })} 
       />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} options={({ navigation }) => ({
+        title: '정보 변경', headerLeft: () => (
+        <TouchableOpacity style={styles.headerLeft} onPress={() => navigation.navigate('MyInfo')}>
+          <Ionicons name="chevron-back" size={24} color="black" />
+        </TouchableOpacity>
+        ),
+        })} 
+      /> 
     </Stack.Navigator>
   );
 };
@@ -130,7 +131,7 @@ export default function App() {
 
 const styles = StyleSheet.create({
   headerLeft: {
-    padding: 16,
+    padding: 5,
   },
   backIcon: {
     width: 24,

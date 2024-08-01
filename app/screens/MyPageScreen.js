@@ -159,6 +159,7 @@ const styles = StyleSheet.create({
   },
   profileInfo: {
     marginLeft: 30,
+    width: '90%',
   },
   university: {
     fontSize: 18,
@@ -177,7 +178,7 @@ const styles = StyleSheet.create({
   editProfile: {
     color: '#7F7F7F',
     textDecorationLine: 'underline',
-    textAlign: 'right',
+    textAlign: 'center',
     marginTop: -10,
     marginBottom: 5,
   },
