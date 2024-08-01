@@ -34,7 +34,7 @@ const TempSplashScreen = () => {
 const MyPageStackNavigator = () => {
   return (
     <Stack.Navigator initialRouteName="MyPage">
-      <Stack.Screen  name="MyPage" component={MyPageScreen} options={{ title: '마이 페이지' }}/>
+      <Stack.Screen  name="MyPage" component={MyPageScreen} options={{ title: '마이페이지' }}/>
       <Stack.Screen name="EditMyInfo" component={EditMyInfoScreen} options={{ headerShown: false }} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} options={({ navigation }) => ({
           title: '정보 변경',
