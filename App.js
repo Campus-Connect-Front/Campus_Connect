@@ -34,14 +34,22 @@ const TempSplashScreen = () => {
 const MyPageStackNavigator = () => {
   return (
     <Stack.Navigator initialRouteName="MyPage">
-      <Stack.Screen name="MyPage" component={MyPageScreen} options={{ headerShown: false }} />
+      <Stack.Screen  name="MyPage" component={MyPageScreen} options={{ title: '마이 페이지' }}/>
       <Stack.Screen name="EditMyInfo" component={EditMyInfoScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} options={({ navigation }) => ({
+          title: '정보 변경',
+          headerLeft: () => (
+            <TouchableOpacity style={styles.headerLeft} onPress={() => navigation.navigate('MyInfo')}>
+              {/* <Image source={require('./assets/images/back.png')} style={styles.backIcon} /> */}
+            </TouchableOpacity>
+          ),
+        })} 
+      />
       <Stack.Screen name="MyInfo" component={MyInfoScreen} options={({ navigation }) => ({
           title: '내 정보',
           headerLeft: () => (
             <TouchableOpacity style={styles.headerLeft} onPress={() => navigation.navigate('MyPage')}>
-              <Image source={require('./assets/images/back.png')} style={styles.backIcon} />
+              {/* <Image source={require('./assets/images/back.png')} style={styles.backIcon} /> */}
             </TouchableOpacity>
           ),
         })} 
