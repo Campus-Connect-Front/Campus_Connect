@@ -1,6 +1,6 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useLayoutEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
-import { Icon } from 'react-native-elements'; 
+import { Icon } from 'react-native-elements';
 import { useNavigation } from '@react-navigation/native';
 import EmojiSelector, { Categories } from 'react-native-emoji-selector';
 import { ReportScr } from './reportScr';
@@ -18,33 +18,34 @@ export const OneChatScreen = ({ route }) => {
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
   const [isReportModalVisible, setIsReportModalVisible] = useState(false);
   const [isExitModalVisible, setIsExitModalVisible] = useState(false);
+  const flatListRef = useRef(null);
 
   useLayoutEffect(() => {
     navigation.setOptions({
       title: chatName,
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Icon 
-            name="report" 
-            size={25} 
-            color="black" 
-            containerStyle={{ marginRight: 10 }} 
-            onPress={() => setIsReportModalVisible(true)} 
+          <Icon
+            name="report"
+            size={25}
+            color="black"
+            containerStyle={{ marginRight: 10 }}
+            onPress={() => setIsReportModalVisible(true)}
           />
-          <Icon 
-            name="exit-to-app" 
-            size={25} 
-            color="black" 
-            containerStyle={{ marginLeft: 10 }} 
-            onPress={() => setIsExitModalVisible(true)} 
+          <Icon
+            name="exit-to-app"
+            size={25}
+            color="black"
+            containerStyle={{ marginLeft: 10 }}
+            onPress={() => setIsExitModalVisible(true)}
           />
         </View>
       ),
     });
   }, [navigation, chatName]);
 
-  const renderItem = ({ item }) => (
-    <View style={[styles.messageContainer, item.isMine ? styles.myMessageContainer : styles.otherMessageContainer]}>
+  const renderItem = ({ item, index }) => (
+    <View style={[styles.messageContainer, index === 0 ? styles.firstMessageContainer : null, item.isMine ? styles.myMessageContainer : styles.otherMessageContainer]}>
       {!item.isMine && <Image source={require('../assets/circle_logo.png')} style={styles.profileImage} />}
       <View>
         <View style={[styles.bubbleContainer, item.isMine ? styles.myBubbleContainer : styles.otherBubbleContainer]}>
@@ -68,6 +69,7 @@ export const OneChatScreen = ({ route }) => {
 
       setMessages([...messages, newMessage]);
       setInputMessage('');
+      flatListRef.current.scrollToEnd({ animated: true });
     }
   };
 
@@ -82,12 +84,14 @@ export const OneChatScreen = ({ route }) => {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior="padding">
+    <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={80}>
       <FlatList
+        ref={flatListRef}
         data={messages}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         style={styles.chatList}
+        onContentSizeChange={() => flatListRef.current.scrollToEnd({ animated: true })}
       />
       {isEmojiPickerVisible && (
         <EmojiSelector
@@ -112,6 +116,7 @@ export const OneChatScreen = ({ route }) => {
           placeholder="메시지를 입력하세요."
           value={inputMessage}
           onChangeText={setInputMessage}
+          onFocus={() => flatListRef.current.scrollToEnd({ animated: true })}
         />
         <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
           <Icon
@@ -139,7 +144,7 @@ export const OneChatScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E5E5E5',
+    backgroundColor: '#EBEDF6',
   },
   chatList: {
     flex: 1,
@@ -148,6 +153,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginVertical: 5,
     alignItems: 'flex-end',
+  },
+  firstMessageContainer: {
+    marginTop: 20, // 첫 번째 메시지에만 적용되는 스타일
   },
   myMessageContainer: {
     justifyContent: 'flex-end',
@@ -193,7 +201,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderTopWidth: 1,
     borderColor: '#ddd',
-    alignItems: 'center',  
+    alignItems: 'center',
   },
   input: {
     flex: 1,

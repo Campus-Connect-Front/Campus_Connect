@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity } from 'react-native';
-import { Icon } from 'react-native-elements'; 
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
+import { Icon } from 'react-native-elements';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 export const ChatBotScreen = ({ route }) => {
   const navigation = useNavigation();
+  const flatListRef = useRef(null);
 
   const initialMessages = [
     { id: '1', text: '안녕하세요! 무엇을 도와드릴까요?', isMine: false },
@@ -20,11 +21,11 @@ export const ChatBotScreen = ({ route }) => {
     '기본': '죄송해요, 잘 이해하지 못했습니다. 다른 질문을 해주세요.',
   };
 
-  const handleSend = () => {
-    if (inputMessage.trim()) {
+  const handleSend = (messageText) => {
+    if (messageText.trim()) {
       const userMessage = {
         id: (messages.length + 1).toString(),
-        text: inputMessage,
+        text: messageText,
         isMine: true
       };
 
@@ -32,12 +33,13 @@ export const ChatBotScreen = ({ route }) => {
 
       const botMessage = {
         id: (messages.length + 2).toString(),
-        text: botResponses[inputMessage.trim()] || botResponses['기본'],
+        text: botResponses[messageText.trim()] || botResponses['기본'],
         isMine: false
       };
 
       setTimeout(() => {
         setMessages(prevMessages => [...prevMessages, botMessage]);
+        flatListRef.current.scrollToEnd({ animated: true });
       }, 1000); // 챗봇 응답 딜레이 1초
 
       setInputMessage('');
@@ -56,10 +58,10 @@ export const ChatBotScreen = ({ route }) => {
         </View>
         {!item.isMine && (
           <View style={styles.buttonsContainer}>
-            <TouchableOpacity style={styles.optionButton} onPress={() => setInputMessage('최근 학교 공지')}>
+            <TouchableOpacity style={styles.optionButton} onPress={() => handleSend('최근 학교 공지')}>
               <Text style={styles.optionButtonText}>최근 학교 공지</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.optionButton} onPress={() => setInputMessage('수강신청 알림')}>
+            <TouchableOpacity style={styles.optionButton} onPress={() => handleSend('수강신청 알림')}>
               <Text style={styles.optionButtonText}>수강신청 알림</Text>
             </TouchableOpacity>
           </View>
@@ -70,25 +72,26 @@ export const ChatBotScreen = ({ route }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      // 화면이 포커스될 때 실행되는 코드
       return () => {
-        // 화면이 블러될 때 실행되는 코드 (기록 초기화)
+        // 새로 들어갈 때마다 기록 초기화
         setMessages(initialMessages);
       };
     }, [])
   );
 
   return (
-    <View style={styles.container}>
-      <Image 
-        source={require('../assets/Logo_ver2.png')} 
-        style={styles.logo} 
+    <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={80}>
+      <Image
+        source={require('../assets/Logo_ver2.png')}
+        style={styles.logo}
       />
       <FlatList
+        ref={flatListRef}
         data={messages}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         style={styles.chatList}
+        onContentSizeChange={() => flatListRef.current.scrollToEnd({ animated: true })}
       />
       <View style={styles.inputContainer}>
         <TextInput
@@ -96,8 +99,9 @@ export const ChatBotScreen = ({ route }) => {
           placeholder="메시지를 입력하세요."
           value={inputMessage}
           onChangeText={setInputMessage}
+          onFocus={() => flatListRef.current.scrollToEnd({ animated: true })}
         />
-        <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+        <TouchableOpacity style={styles.sendButton} onPress={() => handleSend(inputMessage)}>
           <Icon
             name="send"
             type="material"
@@ -106,26 +110,26 @@ export const ChatBotScreen = ({ route }) => {
           />
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E5E5E5',
-    alignItems: 'center',  
+    backgroundColor: '#EBEDF6',
+    alignItems: 'center',
   },
   logo: {
     width: 100,
     height: 100,
     marginTop: 50,
-    marginBottom: 20,  
+    marginBottom: 20,
     resizeMode: 'contain',
   },
   chatList: {
     flex: 1,
-    width: '100%',  
+    width: '100%',
   },
   messageContainer: {
     flexDirection: 'row',
@@ -144,8 +148,14 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'flex-end',
   },
+  myBubbleContainer: {
+    alignItems: 'flex-end',
+  },
+  otherBubbleContainer: {
+    alignItems: 'flex-start',
+  },
   bubble: {
-    maxWidth: '100%',
+    maxWidth: '80%', 
     padding: 10,
     borderRadius: 10,
   },
@@ -172,22 +182,22 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 5,
-    marginBottom: 100,  
+    marginBottom: 100,
   },
   botName: {
     fontSize: 14,
     color: '#000',
     alignSelf: 'center',
     marginLeft: 0,
-    marginBottom: 110,  
+    marginBottom: 110,
   },
   inputContainer: {
     flexDirection: 'row',
     padding: 10,
     borderTopWidth: 1,
     borderColor: '#ddd',
-    width: '100%',  
-    alignItems: 'center',  
+    width: '100%',
+    alignItems: 'center',
   },
   input: {
     flex: 1,
@@ -206,7 +216,7 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 5,
+    marginTop: 10, 
   },
   optionButton: {
     backgroundColor: '#FFFFFF',
@@ -214,8 +224,7 @@ const styles = StyleSheet.create({
     borderColor: '#5678F0',
     borderWidth: 1,
     padding: 5,
-    marginHorizontal: 5,
-    marginLeft: -30,
+    marginHorizontal: 10, 
   },
   optionButtonText: {
     color: '#5678F0',
