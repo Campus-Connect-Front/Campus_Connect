@@ -159,7 +159,6 @@ export default function EditMyInfoScreen({ route, navigation }) {
           <Picker.Item label="카자흐스탄" value="카자흐스탄" />
           <Picker.Item label="케냐" value="케냐" />
           <Picker.Item label="키리바시" value="키리바시" />
-          <Picker.Item label="한국" value="한국" />
           <Picker.Item label="코소보" value="코소보" />
           <Picker.Item label="쿠웨이트" value="쿠웨이트" />
           <Picker.Item label="키르기스스탄" value="키르기스스탄" />
