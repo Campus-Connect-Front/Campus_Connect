@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, Image, TouchableOpacity, Text } from 'react-native';
+import { View, TextInput, StyleSheet, Image, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Text } from 'react-native';
 
 export default function LoginScreen({ navigation }) {
   const [studentId, setStudentId] = useState('');
@@ -15,8 +15,9 @@ export default function LoginScreen({ navigation }) {
   const isLoginButtonDisabled = !(studentId && password); // 아이디와 비밀번호가 모두 입력되지 않으면 버튼 비활성화
 
   return (
-    <View style={styles.container}>
-      <Image source={require('../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <Image source={require('../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
       <View style={styles.inputContainer}>
         <Text style={styles.fieldName}>아이디(학번)</Text>
         <TextInput
@@ -46,7 +47,8 @@ export default function LoginScreen({ navigation }) {
       <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
         <Text style={styles.signupText}>회원가입</Text>
       </TouchableOpacity>
-    </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 

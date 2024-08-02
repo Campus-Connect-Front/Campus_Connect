@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, Image, ScrollView, Alert } from 'react-native';
+import { View, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Text, StyleSheet, Image, ScrollView, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { CheckBox } from 'react-native-elements'; 
@@ -20,6 +20,26 @@ export default function AdditionalInfoScreen({ navigation }) {
       Alert.alert('비밀번호 오류', '비밀번호가 일치하지 않습니다.');
       return;
     }
+
+    if (password.length < 10) {
+      Alert.alert('비밀번호 오류', '비밀번호는 최소 10자리 이상이어야 합니다.');
+      return;
+    }
+    /*
+    if (!nationality) {
+      Alert.alert('오류', '국적을 선택해야 합니다.');
+      return;
+    }
+
+    if (languages.length === 0) {
+      Alert.alert('오류', '구사 가능한 언어를 최소 하나 이상 선택해야 합니다.');
+      return;
+    }
+    if (learningLanguages.length === 0) {
+      Alert.alert('오류', '희망 학습 언어를 최소 하나 이상 선택해야 합니다.');
+      return;
+    }
+    */
 
     Alert.alert('회원가입 완료', '회원가입이 성공적으로 완료되었습니다.', [
       { text: 'OK', onPress: () => navigation.navigate('Login') }
@@ -53,7 +73,8 @@ export default function AdditionalInfoScreen({ navigation }) {
   ];
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <ScrollView contentContainerStyle={styles.container}>
       <Image source={require('../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
       <View style={styles.inputContainer}>
         <Text style={styles.label}>닉네임</Text>
@@ -322,7 +343,8 @@ export default function AdditionalInfoScreen({ navigation }) {
       >
         <Text style={styles.buttonText}>회원가입 완료</Text>
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </TouchableWithoutFeedback>
   );
 }
 

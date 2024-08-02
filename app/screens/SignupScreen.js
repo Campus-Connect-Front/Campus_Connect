@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, Image, TouchableOpacity, Text, Modal, ActivityIndicator } from 'react-native';
+import { View, TextInput, StyleSheet, Image, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Text, Modal, ActivityIndicator } from 'react-native';
 
 export default function SignupScreen({ navigation }) {
   const [studentId, setStudentId] = useState('');
@@ -13,7 +13,7 @@ export default function SignupScreen({ navigation }) {
   const handleVerification = () => {
     setVerificationModalVisible(true);
 
-    // 학번 인증을 시뮬레이션하는 타이머
+    // 학번 인증 타이머
     setTimeout(() => {
       setVerificationComplete(true);
     }, 2000); // 2초 후에 인증 완료
@@ -21,10 +21,11 @@ export default function SignupScreen({ navigation }) {
 
   const handleVerificationConfirm = () => {
     setVerificationModalVisible(false);
-    navigation.navigate('AdditionalInfo'); // 수정된 스크린 이름
+    navigation.navigate('AdditionalInfo'); 
   };
 
   return (
+  <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.container}>
       <Image source={require('../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
       <View style={styles.inputContainer}>
@@ -72,7 +73,7 @@ export default function SignupScreen({ navigation }) {
           <View style={styles.modalContainer}>
             {!isVerificationComplete ? (
               <>
-                <Text style={styles.modalText}>학번 인증중...</Text>
+                <Text style={styles.modalText}>학번 인증 중...</Text>
                 <ActivityIndicator size="large" color="#5678F0" />
               </>
             ) : (
@@ -87,6 +88,8 @@ export default function SignupScreen({ navigation }) {
         </View>
       </Modal>
     </View>
+  </TouchableWithoutFeedback>
+    
   );
 }
 
