@@ -7,7 +7,7 @@ import { ChatBotScreen } from './app/screens/chatBotScr';
 import { BoardScreen, BoardSearchPage } from './app/screens/boardScr';
 import { ChatListScreen } from './app/screens/chatListScr';
 import { MatchingScreen } from './app/screens/matchingScr';
-import { MyPageScreen } from './app/screens/myPageScr';
+//import { MyPageScreen } from './app/screens/myPageScr';
 import { OneChatScreen } from './app/screens/OneChatscreen';
 import { GroupChatScreen } from './app/screens/GroupChatscreen';
 import { BoardDetailScreen } from './app/screens/boardDetailScr';
@@ -44,7 +44,7 @@ const MainTabNavigator = ({ navigation }) => {
       <Tab.Screen options={{ headerShown: false }} name="Board">{() => (<BoardScreen parentNav={navigation} />)}</Tab.Screen>
       <Tab.Screen options={{ headerShown: false }} name="Matching" component={MatchingScreen} />
       <Tab.Screen options={{ headerShown: false }} name="ChatList" component={ChatListScreen} />
-      <Tab.Screen options={{ headerShown: false }} name="MyPage" component={MyPageScreen} />
+      {/*<Tab.Screen options={{ headerShown: false }} name="MyPage" component={MyPageScreen} />*/}
     </Tab.Navigator>
   )
 }

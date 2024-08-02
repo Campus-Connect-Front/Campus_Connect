@@ -1,29 +1,50 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Text, View, Image, TouchableOpacity, FlatList, StyleSheet, ImageBackground } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
-const oneToOneChats = [
-    { id: '1', name: '수정이', time: '10:30 AM', message: 'hi~' },
-    { id: '2', name: '수룡이', time: '11:15 AM', message: 'hello' },
-];
-
-const groupChats = [
-    { id: '1', name: '영어', time: '09:00 AM', message: 'ABC' },
-    { id: '2', name: '중국어', time: '10:45 AM', message: 'Ni hao!' },
-];
+import { API } from '../../config';
 
 export const ChatListScreen = () => {
     const [selectedChatType, setSelectedChatType] = useState('oneToOne');
     const navigation = useNavigation();
+    const [oneToOneChats, setOneToOneChats] = useState([]);
+    const [groupChats, setGroupChats] = useState([]);
+
+    useEffect(() => {
+        const fetchChats = async () => {
+            try {
+                const response = await fetch(
+                    selectedChatType === 'oneToOne'
+                        ? `${API.CHAT}/roomList/match?userId=3` // 매칭 채팅 리스트
+                        : `${API.CHAT}/roomList/group` // 그룹 채팅 리스트
+                );
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                if (selectedChatType === 'oneToOne') {
+                    setOneToOneChats(data);
+                } else {
+                    setGroupChats(data);
+                }
+            } catch (error) {
+                console.error('Error fetching chat rooms:', error);
+            }
+        };
+
+        fetchChats();
+    }, [selectedChatType]);
+
 
     const renderItem = ({ item }) => (
         <TouchableOpacity 
         onPress={() => {
             if (selectedChatType === 'oneToOne') {
-                navigation.navigate('OneChat', { chatId: item.id, chatName: item.name });
+                navigation.navigate('OneChat', { chatId: item.roomId, chatName: item.roomName });
             } else {
-                navigation.navigate('GroupChat', { chatId: item.id, chatName: item.name });
+                navigation.navigate('GroupChat', { chatId: item.roomId, chatName: item.roomName });
             }
         }}
             style={styles.chatItem}>
@@ -32,8 +53,8 @@ export const ChatListScreen = () => {
                 style={styles.chatItemImage} 
             />
             <View style={{ flex: 1 }}>
-                <Text>{item.name}</Text>
-                <Text>{item.message}</Text>
+                <Text>{item.roomName}</Text> {/* 채팅방 이름 */}
+                <Text>{item.roomName}</Text> {/* 최신 메시지 */}
             </View>
             <Text style={{ color: '#888' }}>{item.time}</Text>
         </TouchableOpacity>
