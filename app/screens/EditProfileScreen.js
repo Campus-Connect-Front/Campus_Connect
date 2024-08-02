@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, TextInput, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Alert, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -37,7 +37,14 @@ export default function EditProfileScreen({ navigation }) {
     loadProfile();
   }, []);
 
+  const isSaveButtonDisabled = !profile.oldPassword;
+
   const handleSave = async () => {
+
+    if (profile.newPassword.length < 10) {
+      Alert.alert('비밀번호 오류', '비밀번호는 최소 10자리 이상이어야 합니다.');
+      return;
+    }
 
     if (profile.newPassword !== profile.confirmPassword) {
       Alert.alert('비밀번호 오류', '새 비밀번호와 재입력한 비밀번호가 일치하지 않습니다.');
@@ -78,16 +85,13 @@ export default function EditProfileScreen({ navigation }) {
   };
 
   const formatDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+    return new Intl.DateTimeFormat('ko-KR', options).format(date);
   };
 
-  const isSaveButtonDisabled = !profile.oldPassword;
-
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.formContainer}>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>기존 비밀번호</Text>
@@ -180,7 +184,8 @@ export default function EditProfileScreen({ navigation }) {
       >
         <Text style={styles.saveButtonText}>변경하기</Text>
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -248,7 +253,7 @@ const styles = StyleSheet.create({
     maxWidth: 320,
   },
   saveButtonDisabled: {
-    backgroundColor: '#B0B0B0', // Disabled color
+    backgroundColor: '#B0B0B0',
   },
   saveButtonText: {
     color: '#FFFFFF',

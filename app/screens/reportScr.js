@@ -7,14 +7,14 @@ export const ReportScr = ({ visible, onClose, onSubmit }) => {
   const [alertVisible, setAlertVisible] = useState(false);
 
   const handleSubmit = () => {
-    onSubmit(reportText); // onSubmit을 호출
-    setAlertVisible(true); // 알림 모달 표시
+    onSubmit(reportText); 
+    setAlertVisible(true); 
   };
 
   const handleAlertClose = () => {
     setAlertVisible(false);
-    onClose(); // 신고 모달 닫기
-    setReportText(''); // 입력 필드 초기화
+    onClose(); 
+    setReportText(''); 
   };
 
   return (
@@ -161,3 +161,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+export default ReportScr;

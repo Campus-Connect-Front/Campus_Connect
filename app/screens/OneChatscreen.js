@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { useNavigation } from '@react-navigation/native';
 import EmojiSelector, { Categories } from 'react-native-emoji-selector';
@@ -26,14 +26,14 @@ export const OneChatScreen = ({ route }) => {
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Icon
-            name="report"
+            name="report-gmailerrorred"
             size={25}
             color="black"
             containerStyle={{ marginRight: 10 }}
             onPress={() => setIsReportModalVisible(true)}
           />
           <Icon
-            name="exit-to-app"
+            name="logout"
             size={25}
             color="black"
             containerStyle={{ marginLeft: 10 }}
@@ -84,60 +84,62 @@ export const OneChatScreen = ({ route }) => {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={80}>
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        style={styles.chatList}
-        onContentSizeChange={() => flatListRef.current.scrollToEnd({ animated: true })}
-      />
-      {isEmojiPickerVisible && (
-        <EmojiSelector
-          category={Categories.ALL}
-          onEmojiSelected={emoji => setInputMessage(inputMessage + emoji)}
-          showSearchBar={false}
-          columns={8}
+    <TouchableWithoutFeedback onPress={() => setIsEmojiPickerVisible(false)}>
+      <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={80}>
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          style={styles.chatList}
+          onContentSizeChange={() => flatListRef.current.scrollToEnd({ animated: true })}
         />
-      )}
-      <View style={styles.inputContainer}>
-        <TouchableOpacity onPress={() => setIsEmojiPickerVisible(!isEmojiPickerVisible)}>
-          <Icon
-            name="emoji-emotions"
-            type="material"
-            color="#7F9AF5"
-            size={24}
-            style={styles.emojiButton}
+        {isEmojiPickerVisible && (
+          <EmojiSelector
+            category={Categories.ALL}
+            onEmojiSelected={emoji => setInputMessage(inputMessage + emoji)}
+            showSearchBar={false}
+            columns={8}
           />
-        </TouchableOpacity>
-        <TextInput
-          style={styles.input}
-          placeholder="메시지를 입력하세요."
-          value={inputMessage}
-          onChangeText={setInputMessage}
-          onFocus={() => flatListRef.current.scrollToEnd({ animated: true })}
+        )}
+        <View style={styles.inputContainer}>
+          <TouchableOpacity onPress={() => setIsEmojiPickerVisible(!isEmojiPickerVisible)}>
+            <Icon
+              name="emoji-emotions"
+              type="material"
+              color="#7F9AF5"
+              size={24}
+              style={styles.emojiButton}
+            />
+          </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            placeholder="메시지를 입력하세요."
+            value={inputMessage}
+            onChangeText={setInputMessage}
+            onFocus={() => flatListRef.current.scrollToEnd({ animated: true })}
+          />
+          <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+            <Icon
+              name="send"
+              type="material"
+              color="#7F9AF5"
+              size={24}
+            />
+          </TouchableOpacity>
+        </View>
+        <ReportScr
+          visible={isReportModalVisible}
+          onClose={() => setIsReportModalVisible(false)}
+          onSubmit={handleReportSubmit}
         />
-        <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-          <Icon
-            name="send"
-            type="material"
-            color="#7F9AF5"
-            size={24}
-          />
-        </TouchableOpacity>
-      </View>
-      <ReportScr
-        visible={isReportModalVisible}
-        onClose={() => setIsReportModalVisible(false)}
-        onSubmit={handleReportSubmit}
-      />
-      <ExitModal
-        visible={isExitModalVisible}
-        onClose={() => setIsExitModalVisible(false)}
-        onExit={handleExit}
-      />
-    </KeyboardAvoidingView>
+        <ExitModal
+          visible={isExitModalVisible}
+          onClose={() => setIsExitModalVisible(false)}
+          onExit={handleExit}
+        />
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -155,7 +157,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   firstMessageContainer: {
-    marginTop: 20, // 첫 번째 메시지에만 적용되는 스타일
+    marginTop: 20, 
   },
   myMessageContainer: {
     justifyContent: 'flex-end',

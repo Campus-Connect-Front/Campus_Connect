@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, Image, TouchableOpacity, Text, Modal, ActivityIndicator } from 'react-native';
+import { View, TextInput, StyleSheet, Image, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Text, Modal, ActivityIndicator } from 'react-native';
 import {API} from '../../config'
 
 export default function SignupScreen({ navigation }) {
@@ -46,18 +46,19 @@ export default function SignupScreen({ navigation }) {
       setVerificationModalVisible(false); // 모달 닫기
   }
 
-    // 학번 인증을 시뮬레이션하는 타이머
+    // 학번 인증 타이머 2초로 설정
     setTimeout(() => {
       setVerificationComplete(true);
-    }, 2000); // 2초 후에 인증 완료
+    }, 2000);
   };
 
   const handleVerificationConfirm = () => {
     setVerificationModalVisible(false);
-    navigation.navigate('AdditionalInfo'); // 수정된 스크린 이름
+    navigation.navigate('AdditionalInfo'); 
   };
 
   return (
+  <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.container}>
       <Image source={require('../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
       <View style={styles.inputContainer}>
@@ -105,8 +106,10 @@ export default function SignupScreen({ navigation }) {
           <View style={styles.modalContainer}>
             {!isVerificationComplete ? (
               <>
-                <Text style={styles.modalText}>학번 인증중...</Text>
-                <ActivityIndicator size="large" color="#5678F0" />
+                <Text style={styles.modalText}>학번 인증 중...</Text>
+                <View style={styles.activityIndicatorContainer}>
+                    <ActivityIndicator size="large" color="#5678F0" />
+                  </View>
               </>
             ) : (
               <>
@@ -120,6 +123,8 @@ export default function SignupScreen({ navigation }) {
         </View>
       </Modal>
     </View>
+  </TouchableWithoutFeedback>
+    
   );
 }
 
@@ -195,6 +200,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 20,
     width: '100%',
+    alignItems: 'center',
+  },
+  activityIndicatorContainer: {
+    marginVertical: 20, 
     alignItems: 'center',
   },
 });

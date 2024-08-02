@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderColor: '#A9A9A9', 
         borderWidth: 1,
-        marginTop: 10, 
+        marginTop: 0, 
     },
     newChatButtonBackground: {
         width: '100%',
