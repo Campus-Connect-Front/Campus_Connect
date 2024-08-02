@@ -1,15 +1,42 @@
 import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, Image, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Text } from 'react-native';
+import { API } from '../../config'
 
 export default function LoginScreen({ navigation }) {
   const [studentId, setStudentId] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleLogin = () => {
+  const handleLogin = async() => {
     // 로그인 로직 추가
-    if (studentId && password) {
-      navigation.navigate('Main');
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`${API.USER}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          username: studentId,
+          password: password,
+        }).toString(),
+      });
+
+      if (response.ok) {
+        // 로그인 성공 시
+        console.log('Login successful');
+        navigation.navigate('Main');
+      } else {
+        // 로그인 실패 시
+        setError('로그인에 실패했습니다. 다시 시도해 주세요.');
+      }
+    } catch (error) {
+      setLoading(false);
+      setError('네트워크 오류가 발생했습니다. 다시 시도해 주세요.');
     }
+    setLoading(false);
   };
 
   const isLoginButtonDisabled = !(studentId && password);
@@ -44,6 +71,8 @@ export default function LoginScreen({ navigation }) {
       >
         <Text style={styles.buttonText}>로그인</Text>
       </TouchableOpacity>
+      {loading && <Text>Loading...</Text>}
+      {error && <Text style={styles.errorText}>{error}</Text>}
       <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
         <Text style={styles.signupText}>회원가입</Text>
       </TouchableOpacity>

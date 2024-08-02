@@ -3,6 +3,7 @@ import { View, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, 
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { CheckBox } from 'react-native-elements'; 
+import { API } from '../../config'
 
 export default function AdditionalInfoScreen({ navigation }) {
   const [nickname, setNickname] = useState('');
@@ -16,12 +17,50 @@ export default function AdditionalInfoScreen({ navigation }) {
 
   const isSignupEnabled = nickname !== '' && password !== '' && confirmPassword !== '' && nationality !== '';
 
-  const handleSignup = () => {
+  const handleSignup = async() => {
     if (password !== confirmPassword) {
       Alert.alert('비밀번호 오류', '비밀번호가 일치하지 않습니다.');
       return;
     }
+    const joinRequestDTO = {
+      // 이전 화면에서 정보 넘겨줘야 함
+      userAuthenticationDTO: {
+        studentId: '입력한 학번', 
+        studentName: '입력한 이름', 
+        major: '입력한 학과', 
+      },
+      // 사용자가 직접 입력
+      usersDTO: {
+        nickName: nickname,
+        password: password,
+        birthday: birthdate.toISOString().split('T')[0], // YYYY-MM-DD 형식으로 변환
+        nationality: nationality,
+        availableLang: languages.map(lang => ({ lang })),
+        desiredLang: learningLanguages.map(lang => ({ lang })),
+      },
+    };
+    try {
+      const response = await fetch(`${API.USER}/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(joinRequestDTO),
+      });
 
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.text();
+      Alert.alert('회원가입 완료', result, [
+        { text: 'OK', onPress: () => navigation.navigate('Login') },
+      ]);
+    } catch (error) {
+      console.error('회원가입 오류:', error);
+      Alert.alert('오류', '오류가 발생했습니다. 다시 시도해 주세요.');
+    }
     if (password.length < 10) {
       Alert.alert('비밀번호 오류', '비밀번호는 최소 10자리 이상이어야 합니다.');
       return;
@@ -41,11 +80,8 @@ export default function AdditionalInfoScreen({ navigation }) {
       return;
     }
     */
-
-    Alert.alert('회원가입 완료', '회원가입이 성공적으로 완료되었습니다.', [
-      { text: 'OK', onPress: () => navigation.navigate('Login') }
-    ]);
   };
+  
 
   const handleDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || birthdate;
