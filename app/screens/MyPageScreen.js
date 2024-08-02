@@ -6,9 +6,21 @@ import InfoTableBox from '../components/InfoTableBox';
 import { miniLanguageBox } from '../assets/styles/globalStyles';
 
 export default function MyPageScreen({ navigation }) {
+
+  const [profile, setProfile] = useState({
+    university: '',
+    nickname: '',
+    birthdate: '',
+    department: '',
+    studentId: '',
+    nationality: '',
+    languages: [],
+    learningLanguages: [],
+  });
+
   const defaultProfile = {
     university: '성신여자대학교',
-    nickname: '닉네임',
+    nickname: '수정이',
     birthdate: '20XX.XX.XX',
     department: '컴퓨터공학과',
     studentId: '20XXXXXX',
@@ -16,8 +28,7 @@ export default function MyPageScreen({ navigation }) {
     languages: ['한국어', '영어'], 
     learningLanguages: ['영어', '일본어'], 
   };
-
-  const [profile, setProfile] = useState(defaultProfile);
+  
   const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
@@ -32,6 +43,9 @@ export default function MyPageScreen({ navigation }) {
             languages: loadedProfile.languages || prevProfile.languages,
             learningLanguages: loadedProfile.learningLanguages || prevProfile.learningLanguages,
           }));
+        } else {
+          // AsyncStorage에서 프로필 정보가 없을 경우 임시값 설정
+          setProfile(defaultProfile);
         }
       } catch (error) {
         console.error('Failed to load profile:', error);

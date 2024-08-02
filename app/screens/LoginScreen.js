@@ -12,7 +12,7 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
-  const isLoginButtonDisabled = !(studentId && password); // 아이디와 비밀번호가 모두 입력되지 않으면 버튼 비활성화
+  const isLoginButtonDisabled = !(studentId && password);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

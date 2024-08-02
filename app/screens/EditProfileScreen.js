@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     maxWidth: 320,
   },
   saveButtonDisabled: {
-    backgroundColor: '#B0B0B0', // Disabled color
+    backgroundColor: '#B0B0B0',
   },
   saveButtonText: {
     color: '#FFFFFF',

@@ -13,10 +13,10 @@ export default function SignupScreen({ navigation }) {
   const handleVerification = () => {
     setVerificationModalVisible(true);
 
-    // 학번 인증 타이머
+    // 학번 인증 타이머 2초로 설정
     setTimeout(() => {
       setVerificationComplete(true);
-    }, 2000); // 2초 후에 인증 완료
+    }, 2000);
   };
 
   const handleVerificationConfirm = () => {
