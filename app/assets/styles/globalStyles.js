@@ -12,6 +12,8 @@ export const shadowStyle = {
         ios: {
             shadowColor: "#000000",
             shadowOpacity: 0.45,
+            shadowRadius: 5, 
+            shadowOffset: { width: 0, height: 2 }
         },
         android: { elevation: 5 }
     })

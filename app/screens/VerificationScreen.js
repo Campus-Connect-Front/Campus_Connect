@@ -4,7 +4,7 @@ import { View, StyleSheet, Image, TouchableOpacity, Text } from 'react-native';
 export default function VerificationScreen({ navigation }) {
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/logo.png')} style={styles.logo} resizeMode="contain" />
+      <Image source={require('../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
       <Text style={styles.message}>학번 인증이 완료되었습니다.</Text>
       <TouchableOpacity style={styles.customButton} onPress={() => navigation.navigate('AdditionalInfo')}>
         <Text style={styles.buttonText}>다음</Text>
