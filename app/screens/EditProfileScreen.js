@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, TextInput, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Alert, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -87,7 +87,8 @@ export default function EditProfileScreen({ navigation }) {
   const isSaveButtonDisabled = !profile.oldPassword;
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.formContainer}>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>기존 비밀번호</Text>
@@ -180,7 +181,8 @@ export default function EditProfileScreen({ navigation }) {
       >
         <Text style={styles.saveButtonText}>변경하기</Text>
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </TouchableWithoutFeedback>
   );
 }
 
