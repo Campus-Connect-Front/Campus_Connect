@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import InfoTableBox from '../components/InfoTableBox';
 import { miniLanguageBox } from '../assets/styles/globalStyles';
+import {API} from '../../config'
 
 export default function MyPageScreen({ navigation }) {
   const defaultProfile = {
@@ -23,19 +24,34 @@ export default function MyPageScreen({ navigation }) {
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const profileData = await AsyncStorage.getItem('profile');
-        if (profileData) {
-          const loadedProfile = JSON.parse(profileData);
-          setProfile(prevProfile => ({
-            ...prevProfile,
-            ...loadedProfile,
-            languages: loadedProfile.languages || prevProfile.languages,
-            learningLanguages: loadedProfile.learningLanguages || prevProfile.learningLanguages,
-          }));
+        const userToken = await AsyncStorage.getItem('userToken'); // 로그인한 유저의 토큰 가져오기
+        const response = await fetch(`${API.USER}/mypage`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${userToken}`, // Bearer 토큰을 포함시킴
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
         }
-      } catch (error) {
+
+        const data = await response.json();
+        setProfile(prevProfile => ({
+            ...prevProfile,
+            university: data.usersDTO.university || prevProfile.university,
+            nickname: data.usersDTO.nickName || prevProfile.nickname,
+            birthdate: data.usersDTO.birthday || prevProfile.birthdate,
+            department: data.usersDTO.department || prevProfile.department,
+            studentId: data.usersDTO.studentId || prevProfile.studentId,
+            nationality: data.usersDTO.nationality || prevProfile.nationality,
+            languages: data.availableLangDTO.map(lang => lang.lang) || prevProfile.languages,
+            learningLanguages: data.desiredLangDTO.map(lang => lang.lang) || prevProfile.learningLanguages,
+        }));
+    } catch (error) {
         console.error('Failed to load profile:', error);
-      }
+    }
     };
 
     const loadProfileImage = async () => {
