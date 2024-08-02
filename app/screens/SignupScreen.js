@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, Image, TouchableOpacity, Text, Modal, ActivityIndicator } from 'react-native';
+import {API} from '../../config'
 
 export default function SignupScreen({ navigation }) {
   const [studentId, setStudentId] = useState('');
@@ -10,8 +11,40 @@ export default function SignupScreen({ navigation }) {
 
   const isNextButtonDisabled = !(studentId && department && name);
 
-  const handleVerification = () => {
+  const handleVerification = async () => {
     setVerificationModalVisible(true);
+    // 학생 인증 API 호출
+    try {
+      const response = await fetch(`${API.USER}/auth`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+              studentId,
+              major: department,
+              studentName: name,
+          }),
+      });
+
+      if (!response.ok) {
+          throw new Error('Network response was not ok');
+      }
+
+      const result = await response.text(); // 서버의 응답을 텍스트로 받아옴
+
+      // 인증 결과에 따라 처리
+      if (result === "인증되었습니다.") {
+          setVerificationComplete(true);
+      } else {
+          Alert.alert("인증 실패", result); // 인증 실패 메시지
+          setVerificationModalVisible(false); // 모달 닫기
+      }
+  } catch (error) {
+      console.error('Error during verification:', error);
+      Alert.alert("오류", "인증 중 오류가 발생했습니다."); // 오류 처리
+      setVerificationModalVisible(false); // 모달 닫기
+  }
 
     // 학번 인증을 시뮬레이션하는 타이머
     setTimeout(() => {
