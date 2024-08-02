@@ -26,14 +26,14 @@ export const OneChatScreen = ({ route }) => {
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Icon
-            name="report"
+            name="report-gmailerrorred"
             size={25}
             color="black"
             containerStyle={{ marginRight: 10 }}
             onPress={() => setIsReportModalVisible(true)}
           />
           <Icon
-            name="exit-to-app"
+            name="logout"
             size={25}
             color="black"
             containerStyle={{ marginLeft: 10 }}
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   firstMessageContainer: {
-    marginTop: 20, // 첫 번째 메시지에만 적용되는 스타일
+    marginTop: 20, 
   },
   myMessageContainer: {
     justifyContent: 'flex-end',

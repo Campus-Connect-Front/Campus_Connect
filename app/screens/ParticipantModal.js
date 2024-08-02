@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
 import Modal from 'react-native-modal';
 import { Icon } from 'react-native-elements';
-import { ReportScr } from './reportScr';
-import { ExitModal } from './exitModal';
+import ReportScr from './reportScr'; 
+import ExitModal from './exitModal'; 
 
 export const ParticipantModal = ({ isVisible, onClose, participants, userName }) => {
+  const [sortedParticipants, setSortedParticipants] = useState([]);
+
+  useEffect(() => {
+    const sorted = [participants.find(p => p.name === userName), ...participants.filter(p => p.name !== userName)];
+    setSortedParticipants(sorted);
+  }, [participants, userName]);
+
   const [isReportVisible, setIsReportVisible] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [isExitVisible, setIsExitVisible] = useState(false);
@@ -43,13 +50,21 @@ export const ParticipantModal = ({ isVisible, onClose, participants, userName })
   const renderParticipant = ({ item }) => (
     <View style={styles.participantContainer}>
       <Image source={item.profileImage} style={styles.participantImage} />
-      <Text style={styles.participantName}>
-        {item.name === userName && <Text style={styles.myLabel}>나 </Text>}
-        {item.name}
-      </Text>
+      <View style={styles.nameContainer}>
+        {item.name === userName ? (
+          <>
+            <View style={styles.myLabelContainer}>
+              <Text style={styles.myLabel}>나</Text>
+            </View>
+            <Text style={styles.participantNameText}>{item.name}</Text>
+          </>
+        ) : (
+          <Text style={styles.participantNameText}>{item.name}</Text>
+        )}
+      </View>
       {item.name !== userName && (
         <TouchableOpacity onPress={() => handleReportPress(item)}>
-          <Icon name="report" size={20} color="#333" style={styles.importIcon} />
+          <Icon name="report-gmailerrorred" size={20} color="#333" style={styles.importIcon} />
         </TouchableOpacity>
       )}
     </View>
@@ -67,14 +82,14 @@ export const ParticipantModal = ({ isVisible, onClose, participants, userName })
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>대화상대</Text>
           <FlatList
-            data={participants}
+            data={sortedParticipants}
             renderItem={renderParticipant}
             keyExtractor={item => item.id}
             contentContainerStyle={styles.participantList}
           />
           <View style={styles.exitContainer}>
             <TouchableOpacity onPress={handleExitPress}>
-              <Icon name="exit-to-app" size={24} color="#fff" />
+              <Icon name="logout" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -129,10 +144,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 15,
   },
-  participantName: {
+  nameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  participantNameText: {
     fontSize: 16,
     color: '#333',
-    flex: 1,
+    marginLeft: 5, 
   },
   importIcon: {
     marginLeft: 10,
@@ -145,9 +165,17 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: 5,
   },
+  myLabelContainer: {
+    backgroundColor: '#5678F0',
+    borderRadius: 10,
+    paddingVertical: 2,
+    paddingHorizontal: 6, 
+    marginRight: 5,
+  },
   myLabel: {
-    color: '#5678F0',
+    color: '#fff',
     fontWeight: 'bold',
+    fontSize: 12,
   },
 });
 

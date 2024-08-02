@@ -17,8 +17,11 @@ const initialParticipants = [
   { id: 'CCC', name: 'User CCC', profileImage: require('../assets/circle_logo.png') },
 ];
 
-export const GroupChatScreen = ({ route, navigation }) => {
-  const { chatName, userName } = route.params; // Ensure userName is passed here
+export const GroupChatScreen = ({ route = {}, navigation }) => {
+  const { params = {} } = route;
+  const chatName = params.chatName || '채팅방';
+  const userName = params.userName || '수정이';
+
   const [messages, setMessages] = useState(initialMessages);
   const [inputText, setInputText] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -49,7 +52,7 @@ export const GroupChatScreen = ({ route, navigation }) => {
 
     // 사용자 입장 메시지 추가
     const entryMessage = {
-      id: entryMessageId, // 고유한 id 값 보장
+      id: entryMessageId, 
       text: `${userName}님이 입장했습니다.`,
       system: true,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -57,10 +60,10 @@ export const GroupChatScreen = ({ route, navigation }) => {
     setMessages(prevMessages => [...prevMessages, entryMessage]);
     flatListRef.current.scrollToEnd({ animated: true });
 
-    // 컴포넌트가 언마운트될 때 사용자 퇴장 메시지 추가
+    // 사용자 퇴장 메시지 추가
     return () => {
       const exitMessage = {
-        id: exitMessageId, // 고유한 id 값 보장
+        id: exitMessageId, 
         text: `${userName}님이 퇴장했습니다.`,
         system: true,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -72,7 +75,7 @@ export const GroupChatScreen = ({ route, navigation }) => {
   const sendMessage = () => {
     if (inputText.trim().length > 0) {
       const newMessage = {
-        id: `msg-${Date.now()}`, // 고유한 id 값 보장
+        id: `msg-${Date.now()}`, 
         text: inputText,
         isMine: true,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -157,7 +160,7 @@ export const GroupChatScreen = ({ route, navigation }) => {
         isVisible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
         participants={participants}
-        userName={userName} // Pass userName to ParticipantModal
+        userName={userName} 
       />
     </KeyboardAvoidingView>
   );
@@ -282,3 +285,5 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
 });
+
+export default GroupChatScreen;
