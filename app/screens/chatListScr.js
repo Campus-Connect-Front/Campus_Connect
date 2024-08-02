@@ -15,7 +15,7 @@ export const ChatListScreen = () => {
             try {
                 const response = await fetch(
                     selectedChatType === 'oneToOne'
-                        ? `${API.CHAT}/roomList/match?userId=3` // 매칭 채팅 리스트
+                        ? `${API.CHAT}/roomList/match` // 매칭 채팅 리스트
                         : `${API.CHAT}/roomList/group` // 그룹 채팅 리스트
                 );
                 
@@ -53,8 +53,8 @@ export const ChatListScreen = () => {
                 style={styles.chatItemImage} 
             />
             <View style={{ flex: 1 }}>
-                <Text>{item.roomName}</Text> {/* 채팅방 이름 */}
-                <Text>{item.roomName}</Text> {/* 최신 메시지 */}
+                <Text>{item.roomName}</Text>
+                <Text>{item.roomName}</Text>
             </View>
             <Text style={{ color: '#888' }}>{item.time}</Text>
         </TouchableOpacity>
