@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import InfoTableBox from '../components/InfoTableBox';
 import { miniLanguageBox } from '../assets/styles/globalStyles';
 
 export default function MyPageScreen({ navigation }) {
-
   const [profile, setProfile] = useState({
     university: '',
     nickname: '',
@@ -25,10 +24,10 @@ export default function MyPageScreen({ navigation }) {
     department: '컴퓨터공학과',
     studentId: '20XXXXXX',
     nationality: '한국',
-    languages: ['한국어', '영어'], 
-    learningLanguages: ['영어', '일본어'], 
+    languages: ['한국어', '영어'],
+    learningLanguages: ['영어', '일본어'],
   };
-  
+
   const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
@@ -37,7 +36,7 @@ export default function MyPageScreen({ navigation }) {
         const profileData = await AsyncStorage.getItem('profile');
         if (profileData) {
           const loadedProfile = JSON.parse(profileData);
-          setProfile(prevProfile => ({
+          setProfile((prevProfile) => ({
             ...prevProfile,
             ...loadedProfile,
             languages: loadedProfile.languages || prevProfile.languages,
@@ -67,6 +66,14 @@ export default function MyPageScreen({ navigation }) {
   }, []);
 
   const pickImage = async () => {
+    // 권한 요청
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      Alert.alert("권한이 필요합니다.", "프로필 이미지를 변경하려면 갤러리 접근 권한이 필요합니다.");
+      return;
+    }
+
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -75,8 +82,52 @@ export default function MyPageScreen({ navigation }) {
     });
 
     if (!result.canceled) {
-      setProfileImage(result.uri);
-      await AsyncStorage.setItem('profileImage', result.uri);
+      const selectedImage = result.assets[0].uri; // 선택한 이미지 URI
+      setProfileImage(selectedImage);
+      await AsyncStorage.setItem('profileImage', selectedImage); // AsyncStorage에 저장
+    }
+  };
+
+  const handleImageChange = () => {
+    if (profileImage === null) {
+      // 기본 이미지일 때: 앨범에서 사진 선택만 제공
+      Alert.alert(
+        "프로필 사진 설정",
+        "앨범에서 프로필 이미지로 등록할 사진을 선택하세요.",
+        [
+          {
+            text: "앨범에서 사진 선택",
+            onPress: pickImage, // 갤러리로 이동
+          },
+          {
+            text: "취소",
+            style: "cancel",
+          },
+        ]
+      );
+    } else {
+      // 기본 이미지가 아닐 때: 기본 이미지로 변경 또는 앨범에서 사진 선택 제공
+      Alert.alert(
+        "프로필 사진 설정",
+        "기본 이미지로 변경하거나, 앨범에서 사진을 선택하세요.",
+        [
+          {
+            text: "기본 이미지 적용",
+            onPress: () => {
+              setProfileImage(null); 
+              AsyncStorage.removeItem('profileImage'); // AsyncStorage에서 이미지 삭제
+            },
+          },
+          {
+            text: "앨범에서 사진 선택",
+            onPress: pickImage, // 갤러리로 이동
+          },
+          {
+            text: "취소",
+            style: "cancel",
+          },
+        ]
+      );
     }
   };
 
@@ -103,10 +154,10 @@ export default function MyPageScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.profileContainer}>
-        <TouchableOpacity onPress={pickImage} style={styles.profileImageContainer}>
+        <TouchableOpacity onPress={handleImageChange} style={styles.profileImageContainer}>
           <View style={styles.profileImageWrapper}>
             <Image
-              source={profileImage ? { uri: profileImage } : require('../assets/images/default-profile.png')}
+              source={profileImage ? { uri: profileImage } : require('../assets/images/circle_logo_image.png')} 
               style={styles.profileImage}
             />
           </View>
@@ -186,11 +237,10 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   profileImageWrapper: {
-    width: 100,
-    height: 100,
+    width: 110,
+    height: 110,
     borderRadius: 50,
-    borderWidth: 2,
-    borderColor: '#e0e0e0',
+    marginLeft: 5,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -207,7 +257,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   profileInfo: {
-    marginLeft: 30,
+    marginLeft: 20,
     width: '90%',
   },
   university: {
