@@ -80,7 +80,7 @@ const LoginStackNavigator = () => {
 
 const MainTabNavigator = ({ navigation }) => {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator initialRouteName="Matching">
       <Tab.Screen options={{ headerShown: false }} name='ChatBot' component={ChatBotScreen} />
       <Tab.Screen options={{ headerShown: false }} name="Board">{() => (<BoardScreen parentNav={navigation} />)}</Tab.Screen>
       <Tab.Screen options={{ headerShown: false }} name="Matching" component={MatchingScreen} />
