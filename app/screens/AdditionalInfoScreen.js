@@ -9,6 +9,7 @@ export default function AdditionalInfoScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [birthdate, setBirthdate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [nationality, setNationality] = useState('');
   const [languages, setLanguages] = useState([]);
   const [learningLanguages, setLearningLanguages] = useState([]);
@@ -44,6 +45,17 @@ export default function AdditionalInfoScreen({ navigation }) {
     Alert.alert('회원가입 완료', '회원가입이 성공적으로 완료되었습니다.', [
       { text: 'OK', onPress: () => navigation.navigate('Login') }
     ]);
+  };
+
+  const handleDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || birthdate;
+    setShowDatePicker(false);
+    setBirthdate(currentDate);
+  };
+
+  const formatDate = (date) => {
+    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+    return new Intl.DateTimeFormat('ko-KR', options).format(date);
   };
 
   const toggleLanguage = (language) => {
@@ -107,12 +119,18 @@ export default function AdditionalInfoScreen({ navigation }) {
       </View>
       <View style={styles.inputContainer}>
         <Text style={styles.label}>생년월일</Text>
-        <DateTimePicker
-          value={birthdate}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => setBirthdate(selectedDate || birthdate)}
-        />
+        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.datePickerButton}>
+          <Text style={styles.datePickerText}>{formatDate(birthdate)}</Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={birthdate}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+            style={styles.datePicker}
+          />
+        )}
       </View>
       <View style={styles.inputContainer}>
         <Text style={styles.label}>국적</Text>
@@ -355,14 +373,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     backgroundColor: '#EBEDF6',
-    paddingTop: 80, // 로고 위에 추가된 여백
+    paddingTop: 80,
   },
   logo: {
     width: '60%',
     height: undefined,
     aspectRatio: 5000 / 1830,
     marginBottom: 32,
-    marginTop: 20, // 로고 아래 여백 조정
+    marginTop: 20, 
   },
   inputContainer: {
     width: '100%',
@@ -380,6 +398,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ffffff',
     borderRadius: 8,
+  },
+  datePickerButton: {
+    width: '100%',
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#ffffff',
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  datePickerText: {
+    fontSize: 16,
+    color: '#000', 
   },
   picker: {
     width: '100%',

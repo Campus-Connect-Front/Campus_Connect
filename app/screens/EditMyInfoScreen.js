@@ -12,6 +12,7 @@ export default function EditMyInfoScreen({ route, navigation }) {
   const isSaveEnabled = nationality !== "" && languages.length > 0 && learningLanguages.length > 0;
 
   const handleSave = () => {
+    /*
     if (!nationality) {
       Alert.alert('오류', '국적을 선택해야 합니다.');
       return;
@@ -24,6 +25,7 @@ export default function EditMyInfoScreen({ route, navigation }) {
       Alert.alert('오류', '희망 학습 언어를 최소 하나 이상 선택해야 합니다.');
       return;
     }
+      */
 
     const updatedProfile = {
       ...profile,

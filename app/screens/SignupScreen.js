@@ -13,10 +13,10 @@ export default function SignupScreen({ navigation }) {
   const handleVerification = () => {
     setVerificationModalVisible(true);
 
-    // 학번 인증 타이머
+    // 학번 인증 타이머 2초로 설정
     setTimeout(() => {
       setVerificationComplete(true);
-    }, 2000); // 2초 후에 인증 완료
+    }, 2000);
   };
 
   const handleVerificationConfirm = () => {
@@ -74,7 +74,9 @@ export default function SignupScreen({ navigation }) {
             {!isVerificationComplete ? (
               <>
                 <Text style={styles.modalText}>학번 인증 중...</Text>
-                <ActivityIndicator size="large" color="#5678F0" />
+                <View style={styles.activityIndicatorContainer}>
+                    <ActivityIndicator size="large" color="#5678F0" />
+                  </View>
               </>
             ) : (
               <>
@@ -165,6 +167,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 20,
     width: '100%',
+    alignItems: 'center',
+  },
+  activityIndicatorContainer: {
+    marginVertical: 20, 
     alignItems: 'center',
   },
 });
