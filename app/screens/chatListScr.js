@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 const oneToOneChats = [
     { id: '1', name: '수정이', time: '10:30 AM', message: 'hi~' },
     { id: '2', name: '수룡이', time: '11:15 AM', message: 'hello' },
+    { id: '3', name: '운정이', time: '12:15 AM', message: 'hello!' }
 ];
 
 const groupChats = [
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderColor: '#A9A9A9', 
         borderWidth: 1,
-        marginTop: 10, 
+        marginTop: 0, 
     },
     newChatButtonBackground: {
         width: '100%',
