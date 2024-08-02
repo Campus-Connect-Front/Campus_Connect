@@ -48,9 +48,13 @@ export const ChatBotScreen = ({ route }) => {
 
   const renderItem = ({ item }) => (
     <View style={[styles.messageContainer, item.isMine ? styles.myMessageContainer : styles.otherMessageContainer]}>
-      {!item.isMine && <Image source={require('../assets/circle_logo.png')} style={styles.profileImage} />}
-      {!item.isMine && <Text style={styles.botName}>챗봇</Text>}
-      <View>
+      {!item.isMine && (
+        <View style={styles.botContainer}>
+          <Image source={require('../assets/circle_logo.png')} style={styles.profileImage} />
+          <Text style={styles.botName}>챗봇</Text>
+        </View>
+      )}
+      <View style={styles.bubbleWrapper}>
         <View style={[styles.bubbleContainer, item.isMine ? styles.myBubbleContainer : styles.otherBubbleContainer]}>
           <View style={[styles.bubble, item.isMine ? styles.myBubble : styles.otherBubble]}>
             <Text style={item.isMine ? styles.myMessageText : styles.otherMessageText}>{item.text}</Text>
@@ -134,7 +138,7 @@ const styles = StyleSheet.create({
   messageContainer: {
     flexDirection: 'row',
     marginVertical: 5,
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
   },
   myMessageContainer: {
     justifyContent: 'flex-end',
@@ -143,6 +147,15 @@ const styles = StyleSheet.create({
   otherMessageContainer: {
     justifyContent: 'flex-start',
     paddingLeft: 10,
+  },
+  botContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginRight: 5,
+  },
+  bubbleWrapper: {
+    flexDirection: 'column',
+    flex: 1,
   },
   bubbleContainer: {
     flexDirection: 'column',
@@ -168,7 +181,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#BDD7FF',
     alignSelf: 'flex-start',
     borderTopLeftRadius: 0,
-    marginLeft: -30,
     marginBottom: 10,
   },
   myMessageText: {
@@ -181,15 +193,11 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 5,
-    marginBottom: 100,
   },
   botName: {
     fontSize: 14,
     color: '#000',
-    alignSelf: 'center',
-    marginLeft: 0,
-    marginBottom: 110,
+    marginTop: 5,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -215,8 +223,8 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10, 
+    justifyContent: 'flex-start',
+    marginTop: 10,
   },
   optionButton: {
     backgroundColor: '#FFFFFF',
@@ -224,7 +232,7 @@ const styles = StyleSheet.create({
     borderColor: '#5678F0',
     borderWidth: 1,
     padding: 5,
-    marginHorizontal: 10, 
+    marginHorizontal: 5, 
   },
   optionButtonText: {
     color: '#5678F0',
