@@ -37,7 +37,14 @@ export default function EditProfileScreen({ navigation }) {
     loadProfile();
   }, []);
 
+  const isSaveButtonDisabled = !profile.oldPassword;
+
   const handleSave = async () => {
+
+    if (profile.newPassword.length < 10) {
+      Alert.alert('비밀번호 오류', '비밀번호는 최소 10자리 이상이어야 합니다.');
+      return;
+    }
 
     if (profile.newPassword !== profile.confirmPassword) {
       Alert.alert('비밀번호 오류', '새 비밀번호와 재입력한 비밀번호가 일치하지 않습니다.');
@@ -83,8 +90,6 @@ export default function EditProfileScreen({ navigation }) {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
-
-  const isSaveButtonDisabled = !profile.oldPassword;
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

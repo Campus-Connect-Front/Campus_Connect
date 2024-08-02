@@ -9,14 +9,15 @@ export default function EditMyInfoScreen({ route, navigation }) {
   const [languages, setLanguages] = useState(profile.languages);
   const [learningLanguages, setLearningLanguages] = useState(profile.learningLanguages);
 
+  const isSaveEnabled = nationality !== "" && languages.length > 0 && learningLanguages.length > 0;
+
   const handleSave = () => {
-    // 검증 로직 추가
     if (!nationality) {
       Alert.alert('오류', '국적을 선택해야 합니다.');
       return;
     }
     if (languages.length === 0) {
-      Alert.alert('오류', '구사 가능한 언어를 최소 하나 이상 선택해야 합니다.');
+      Alert.alert('오류', '구사 가능 언어를 최소 하나 이상 선택해야 합니다.');
       return;
     }
     if (learningLanguages.length === 0) {
@@ -24,7 +25,6 @@ export default function EditMyInfoScreen({ route, navigation }) {
       return;
     }
 
-    // 저장 로직
     const updatedProfile = {
       ...profile,
       nationality,
@@ -271,11 +271,12 @@ export default function EditMyInfoScreen({ route, navigation }) {
         ))}
       </View>
       <TouchableOpacity
-        style={[styles.customButton, { backgroundColor:'#5678F0' }]}
-        onPress={handleSave}
+      style={[styles.customButton, { backgroundColor: isSaveEnabled ? '#5678F0' : '#C7D2F5' }]}
+      onPress={handleSave}
+      disabled={!isSaveEnabled}
       >
-        <Text style={styles.buttonText}>완료하기</Text>
-      </TouchableOpacity>
+    <Text style={styles.buttonText}>완료하기</Text>
+</TouchableOpacity>
     </ScrollView>
   );
 }
