@@ -33,7 +33,7 @@ export const miniLanguageBox = StyleSheet.create({
         backgroundColor: '#ffffff',
         borderRadius: 20,
         paddingVertical: 5,
-        paddingHorizontal: 15,
+        paddingHorizontal: 10,
         marginRight: 10,
         ...shadowStyle
     },
