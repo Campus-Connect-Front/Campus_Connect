@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AlertModal from '../components/AlertModal';
 import { alertButtonStyle, miniLanguageBox } from '../assets/styles/globalStyles';
 
-const MatchingWaitScreen = ({ navigation }) => {
+const MatchingWaitScreen = ({ parentNav, navigation }) => {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [failedMatch, setfailedMatch] = useState(false);
@@ -76,7 +76,7 @@ const MatchingWaitScreen = ({ navigation }) => {
                     ]}
                     showAdditionalButton={true}
                     buttonText='변경하기'
-                    buttonOnPress={() => editMyInfo()}
+                    buttonOnPress={() => parentNav.navigate('MyPage')}
                 />
             </View>
             <View style={{ marginTop: 20, marginBottom: '20%' }}>
@@ -149,7 +149,7 @@ const MatchingCompleteScreen = () => {
     )
 }
 
-export const MatchingScreen = () => {
+export const MatchingScreen = ({ navigation }) => {
 
     const [loaded, error] = useFonts({
         'Pretendard-Bold': require('../assets/fonts/Pretendard-Bold.ttf'),
@@ -175,8 +175,9 @@ export const MatchingScreen = () => {
                     options={{
                         headerShown: false
                     }}
-                    name='Wait' component={MatchingWaitScreen}
-                />
+                    name='Wait'>
+                    {(props) => <MatchingWaitScreen parentNav={navigation} {...props} />}
+                </Stack.Screen>
                 <Stack.Screen
                     options={{
                         headerTitle: '',
