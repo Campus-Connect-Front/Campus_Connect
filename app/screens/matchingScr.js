@@ -11,6 +11,8 @@ import { useEffect, useState, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import AlertModal from '../components/AlertModal';
 import { alertButtonStyle, miniLanguageBox } from '../assets/styles/globalStyles';
+import { API } from '../../config'
+
 
 const MatchingWaitScreen = ({ navigation }) => {
 
@@ -22,16 +24,40 @@ const MatchingWaitScreen = ({ navigation }) => {
         console.log('edit my info');
     }
 
-    const startMatching = () => {
+    const startMatching = async () => {
         setfailedMatch(false);
         setModalVisible(true);
         // setTimeout(() => {
         //     failedMatching();
         // }, 1000);
-        timeRef.current = setTimeout(() => {
-            setModalVisible(false);
-            navigation.navigate('Done');
-        }, 2000);
+
+        try {
+            const userToken = await AsyncStorage.getItem('userToken'); // 로그인한 유저의 토큰 가져오기
+            const response = await fetch(`${API.MATCH}/enqueue`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${userToken}`, // Bearer 토큰을 포함시킴
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId:userId,
+                }),
+            });
+    
+            if (!response.ok) {
+                throw new Error('매칭 요청 실패');
+            }
+    
+            
+            timeRef.current = setTimeout(() => {
+              setModalVisible(false);
+              navigation.navigate('Done');
+            }, 2000);
+        } catch (error) {
+            console.error('매칭 중 오류 발생:', error);
+            failedMatching(); // 실패했을 때 매칭 실패 처리
+        }
+
     }
 
     const stopMatching = () => {
