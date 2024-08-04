@@ -1,16 +1,17 @@
 import * as React from 'react';
 import * as SplashScreen from 'expo-splash-screen';
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Platform, Alert } from 'react-native';
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Platform, Alert, BackHandler } from 'react-native';
 import { useFonts } from 'expo-font';
 import { useEffect, useState } from 'react';
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import DropDownPicker from 'react-native-dropdown-picker';
 import SingleSelectButton from '../components/SingleSelectButton';
 import MultiSelectButton from '../components/MultiSelectButton';
-import { Entypo } from '@expo/vector-icons';
+import { Entypo, AntDesign } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
-import { horizontalLineStyle, selectButtonStyle, toastConfig } from '../assets/styles/globalStyles';
+import { alertButtonStyle, horizontalLineStyle, selectButtonStyle, toastConfig } from '../assets/styles/globalStyles';
 import DoneButton from '../components/DoneButton';
+import AlertModal from '../components/AlertModal';
 
 const removeSpace = text => (text.replace(/\s/g, ''))
 
@@ -32,6 +33,8 @@ export const BoardWriteScreen = ({ navigation }) => {
     const [chatname, setChatname] = useState('');
     const [recruit, setRecruit] = useState('');
 
+    const [modalVisible, setModalVisible] = useState(false);
+
     const [loaded, error] = useFonts({
         'Pretendard-Bold': require('../assets/fonts/Pretendard-Bold.ttf'),
         'Pretendard-Regular': require('../assets/fonts/Pretendard-Regular.ttf')
@@ -49,11 +52,22 @@ export const BoardWriteScreen = ({ navigation }) => {
     useEffect(() => {
         navigation.setOptions({
             headerTitle: '',
-            headerBackImage: () => (
-                <AntDesign name="close" size={24} color="#CACACA" />
+            headerLeft: () => (
+                <TouchableOpacity onPress={() => setModalVisible(true)}>
+                    <AntDesign name="close" size={24} color="#CACACA" />
+                </TouchableOpacity>
             )
         });
     }, [navigation]);
+
+    useEffect(() => {
+        BackHandler.addEventListener('hardwareBackPress', () => {
+            setModalVisible(true);
+            return true;
+        });
+
+    }, []);
+
 
     const CreateStudy = () => {
         if (language == null) {
@@ -208,6 +222,24 @@ export const BoardWriteScreen = ({ navigation }) => {
             </GestureHandlerRootView>
 
             <Toast config={toastConfig} />
+
+            <AlertModal
+                modalVisible={modalVisible}
+                setModalVisible={setModalVisible}
+                showCloseButton={false}
+                title={'경고'}
+                message={'페이지를 벗어날 경우\n작성 중인 내용이 사라집니다.'}
+                alertButtons={[{
+                    text: '확인',
+                    style: alertButtonStyle.default,
+                    onPress: () => { setModalVisible(false); navigation.pop(); }
+                }, {
+                    text: '취소',
+                    style: alertButtonStyle.destructive,
+                    onPress: () => { setModalVisible(false); }
+                }]}
+                onRequestClose={() => { (failedMatch) ? setModalVisible(false) : stopMatching(); }}
+            />
         </View>
     )
 }

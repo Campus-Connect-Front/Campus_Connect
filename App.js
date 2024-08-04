@@ -19,8 +19,7 @@ import LoginScreen from './app/screens/LoginScreen';
 import SignupScreen from './app/screens/SignupScreen';
 import VerificationScreen from './app/screens/VerificationScreen';
 import AdditionalInfoScreen from './app/screens/AdditionalInfoScreen';
-
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons, Entypo, FontAwesome5, MaterialIcons, AntDesign } from '@expo/vector-icons';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -80,12 +79,51 @@ const LoginStackNavigator = () => {
 
 const MainTabNavigator = ({ navigation }) => {
   return (
-    <Tab.Navigator initialRouteName="Matching">
-      <Tab.Screen options={{ headerShown: false }} name='ChatBot' component={ChatBotScreen} />
-      <Tab.Screen options={{ headerShown: false }} name="Board">{() => (<BoardScreen parentNav={navigation} />)}</Tab.Screen>
-      <Tab.Screen options={{ headerShown: false }} name="Matching" component={MatchingScreen} />
-      <Tab.Screen options={{ headerShown: false }} name="ChatList" component={ChatListScreen} />
-      <Tab.Screen options={{ headerShown: false }} name="MyPage" component={MyPageStackNavigator} />
+    <Tab.Navigator initialRouteName='Matching' screenOptions={{ tabBarShowLabel: false }}>
+      <Tab.Screen
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ size, focused }) => (
+            <MaterialCommunityIcons name="robot" size={size} color={focused ? '#5678F0' : '#787878'} />
+          )
+        }}
+        name='ChatBot' component={ChatBotScreen} />
+      <Tab.Screen
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ size, focused }) => (
+            <FontAwesome5 name="book" size={size} color={focused ? '#5678F0' : '#787878'} />
+          )
+        }}
+        name="Board">{() => (<BoardScreen parentNav={navigation} />)}</Tab.Screen>
+      <Tab.Screen
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <Image
+              style={{ marginTop: 10 }}
+              source={
+                focused ? require('../Campus_Connect/app/assets/images/circle_logo_mini_active.png')
+                  : require('../Campus_Connect/app/assets/images/circle_logo_mini.png')} />
+          )
+        }}
+        name="Matching" component={MatchingScreen} />
+      <Tab.Screen
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ size, focused }) => (
+            <Entypo name="chat" size={size} color={focused ? '#5678F0' : '#787878'} />
+          )
+        }}
+        name="ChatList" component={ChatListScreen} />
+      <Tab.Screen
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ size, focused }) => (
+            <Ionicons name="person" size={size} color={focused ? '#5678F0' : '#787878'} />
+          )
+        }}
+        name="MyPage" component={MyPageStackNavigator} />
     </Tab.Navigator>
   );
 };
