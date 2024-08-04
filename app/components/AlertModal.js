@@ -96,6 +96,7 @@ export default class AlertModal extends Component {
                             fontSize: 15,
                             marginTop: 30,
                             marginBottom: 30,
+                            paddingHorizontal: 15,
                             minHeight: '10%',
                             fontFamily: 'Pretendard-Regular'
                         }}>{this.props.message}</Text>
