@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, TextInput, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Alert, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { API } from '../../config'
 
 export default function EditProfileScreen({ navigation }) {
   const [profile, setProfile] = useState({
@@ -39,6 +40,42 @@ export default function EditProfileScreen({ navigation }) {
 
   const isSaveButtonDisabled = !profile.oldPassword;
 
+  const updateUserInfo = async () =>{
+    const userToken = await AsyncStorage.getItem('userToken');
+    const requestBody = {
+      usersDTO: {
+        nickName: profile.nickname,
+        password: profile.newPassword || null,
+        birthday: profile.dateOfBirth.toISOString(),
+      },
+      userAuthenticationDTO: {
+        major: profile.department,
+      },
+    };
+    try {
+      const response = await fetch(`${API.USER}/mypage/edit_userInfo`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${userToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      console.log('Profile updated successfully:', data);
+      Alert.alert('저장 완료', '프로필 정보가 성공적으로 업데이트되었습니다.');
+      navigation.goBack(); // 성공 후 이전 화면으로 돌아가기
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      Alert.alert('오류', '프로필 업데이트 중 문제가 발생했습니다.');
+    }
+  }
+
   const handleSave = async () => {
 
     if (profile.newPassword.length < 10) {
@@ -59,17 +96,9 @@ export default function EditProfileScreen({ navigation }) {
         Alert.alert('비밀번호 오류', '기존 비밀번호가 올바르지 않습니다.');
         return;
       }
+      await updateUserInfo();
 
-      const updatedProfile = {
-        ...existingProfile,
-        nickname: profile.nickname || existingProfile.nickname,
-        studentId: profile.studentId || existingProfile.studentId,
-        department: profile.department || existingProfile.department,
-        password: profile.newPassword || existingProfile.password,
-        dateOfBirth: profile.dateOfBirth.toISOString(),
-      };
-
-      await AsyncStorage.setItem('profile', JSON.stringify(updatedProfile));
+      //await AsyncStorage.setItem('profile', JSON.stringify(updatedProfile));
       Alert.alert('저장 완료', '프로필 정보가 저장되었습니다.');
       navigation.goBack();
     } catch (error) {

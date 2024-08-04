@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { CheckBox } from 'react-native-elements';
+import { API } from '../../config'
 
 export default function EditMyInfoScreen({ route, navigation }) {
   const { profile } = route.params;
@@ -27,15 +28,33 @@ export default function EditMyInfoScreen({ route, navigation }) {
     }
       */
 
-    const updatedProfile = {
-      ...profile,
-      nationality,
-      languages,
-      learningLanguages,
+    
+    const joinRequestDTO = {
+      usersDTO: {
+        nationality,
+        availableLang: languages.map((lang) => ({ lang })),
+        desiredLang: learningLanguages.map((lang) => ({ lang })),
+      },
     };
 
-    console.log('Profile updated:', updatedProfile); 
-    navigation.goBack();
+    fetch(`${API.USER}/mypage/edit_userLangInfo`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(joinRequestDTO),
+    })
+    .then((response) => response.json())
+      .then((data) => {
+        console.log('Success:', data);
+        navigation.goBack();
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        
+      });
+
+    
   };
 
   const toggleLanguage = (language) => {

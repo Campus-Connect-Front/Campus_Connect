@@ -27,6 +27,7 @@ export default function MyPageScreen({ navigation }) {
     nationality: '한국',
     languages: ['한국어', '영어'],
     learningLanguages: ['영어', '일본어'],
+    imgUrl:'null',
   };
 
   const [profileImage, setProfileImage] = useState(null);
@@ -58,31 +59,50 @@ export default function MyPageScreen({ navigation }) {
             nationality: data.usersDTO.nationality || prevProfile.nationality,
             languages: data.availableLangDTO.map(lang => lang.lang) || prevProfile.languages,
             learningLanguages: data.desiredLangDTO.map(lang => lang.lang) || prevProfile.learningLanguages,
+            imgUrl: data.usersDTO.imgUrl || prevProfile.imgUrl,
         }));
+        loadProfileImage(data.usersDTO.imgUrl);
     } catch (error) {
         console.error('Failed to load profile:', error);
     }
     };
 
-    const loadProfileImage = async () => {
+    const loadProfileImage = async (imgUrl) => {
+      if (!imgUrl) console.log("파일이 없습니다");
       try {
-        const image = await AsyncStorage.getItem('profileImage');
-        setProfileImage(image || null);
+          const userToken = await AsyncStorage.getItem('userToken');
+          const response = await fetch(`${API.USER}/images/${imgUrl}`, {
+              method: 'GET',
+              headers: {
+                  'Authorization': `Bearer ${userToken}`,
+              },
+          });
+
+          if (!response.ok) {
+              throw new Error('Network response was not ok');
+          }
+          const imageUri = response.url;
+          setProfileImage(imageUri);
       } catch (error) {
-        console.error('Failed to load profile image:', error);
-        setProfileImage(null);
+          console.error('Failed to load profile image:', error);
       }
-    };
+  };
 
-    loadProfile();
-    loadProfileImage();
-  }, []);
+      const unsubscribe = navigation.addListener('focus', () => {
+      loadProfile(); 
+      loadProfileImage();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
+
+  // 프로필 이미지 수정하기
   const pickImage = async () => {
     // 권한 요청
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (permissionResult.granted === false) {
+    if (permissionResult.granted === 
+      false) {
       Alert.alert("권한이 필요합니다.", "프로필 이미지를 변경하려면 갤러리 접근 권한이 필요합니다.");
       return;
     }
@@ -97,9 +117,44 @@ export default function MyPageScreen({ navigation }) {
     if (!result.canceled) {
       const selectedImage = result.assets[0].uri; // 선택한 이미지 URI
       setProfileImage(selectedImage);
+      await uploadImage(selectedImage);
       await AsyncStorage.setItem('profileImage', selectedImage); // AsyncStorage에 저장
     }
   };
+  // 서버에 이미지 저장
+  const uploadImage = async (imageUri) => {
+    const userToken = await AsyncStorage.getItem('userToken');
+
+    const formData = new FormData();
+    formData.append('file', {
+        uri: imageUri,
+        type: 'image/jpeg', // 혹은 'image/png'
+        name: 'profile.jpg', // 실제로는 파일 이름이 필요할 수 있습니다.
+    });
+
+    try {
+        const response = await fetch(`${API.USER}/mypage/edit_profileImg`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${userToken}`,
+            },
+            body: formData,
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            console.log('이미지가 성공적으로 업로드되었습니다:', data);
+            // 성공 시 프로필 이미지를 다시 로드
+            await loadProfileImage();
+        } else {
+            console.error('이미지 업로드 실패:', data);
+            Alert.alert('오류', data); // 오류 메시지 표시
+        }
+    } catch (error) {
+        console.error('이미지 업로드 중 오류 발생:', error);
+        Alert.alert('오류', '이미지 업로드 중 문제가 발생했습니다.');
+    }
+};
 
   const handleImageChange = () => {
     if (profileImage === null) {
@@ -144,6 +199,8 @@ export default function MyPageScreen({ navigation }) {
     }
   };
 
+
+  // 로그아웃
   const handleLogout = async () => {
     Alert.alert(
       "로그아웃",
@@ -156,8 +213,30 @@ export default function MyPageScreen({ navigation }) {
         {
           text: "OK",
           onPress: async () => {
-            await AsyncStorage.removeItem('userToken');
-            navigation.navigate('Login');
+            const userToken = await AsyncStorage.getItem('userToken');
+
+                    try {
+                        const response = await fetch(`${API.USER}/logout`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${userToken}`, // 토큰을 포함하여 요청
+                                'Content-Type': 'application/json',
+                            },
+                        });
+
+                        if (response.ok) {
+                            // 서버에서 로그아웃 성공
+                            await AsyncStorage.removeItem('userToken'); // AsyncStorage에서 토큰 삭제
+                            navigation.navigate('Login'); // 로그인 화면으로 이동
+                            console.log('로그아웃되었습니다');
+                        } else {
+                            const errorData = await response.json();
+                            Alert.alert('오류', errorData.message || '로그아웃 중 오류가 발생했습니다.');
+                        }
+                    } catch (error) {
+                        console.error('로그아웃 중 오류 발생:', error);
+                        Alert.alert('오류', '로그아웃 중 문제가 발생했습니다.');
+                    }
           }
         }
       ]
