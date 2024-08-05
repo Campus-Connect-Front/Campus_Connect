@@ -54,7 +54,7 @@ export const ChatListScreen = () => {
             />
             <View style={{ flex: 1 }}>
                 <Text>{item.roomName}</Text>
-                <Text>{item.roomName}</Text>
+                <Text>{item.messageContent}</Text>
             </View>
             <Text style={{ color: '#888' }}>{item.time}</Text>
         </TouchableOpacity>

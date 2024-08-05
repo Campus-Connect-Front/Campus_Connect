@@ -11,6 +11,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import AlertModal from '../components/AlertModal';
 import { alertButtonStyle, miniLanguageBox } from '../assets/styles/globalStyles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API } from '../../config'
 
 
@@ -40,7 +41,7 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    userId:userId,
+                    userId:userToken,
                 }),
             });
     
