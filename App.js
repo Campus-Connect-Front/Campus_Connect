@@ -103,8 +103,8 @@ const MainTabNavigator = ({ navigation }) => {
             <Image
               style={{ marginTop: 10 }}
               source={
-                focused ? require('../Campus_Connect/app/assets/images/circle_logo_mini_active.png')
-                  : require('../Campus_Connect/app/assets/images/circle_logo_mini.png')} />
+                focused ? require('../CC_front/app/assets/images/circle_logo_mini_active.png')
+                  : require('../CC_front/app/assets/images/circle_logo_mini.png')} />
           )
         }}
         name="Matching" component={MatchingScreen} />
