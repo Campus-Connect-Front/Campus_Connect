@@ -103,7 +103,7 @@ const MainTabNavigator = ({ navigation }) => {
             <Image
               style={{ marginTop: 10 }}
               source={
-                focused ? require('../CC_front/app/assets/images/circle_logo_mini_active.png')
+                focused ? require('../CC_front/app/assets/images/circle_logo_mini.png')
                   : require('../CC_front/app/assets/images/circle_logo_mini.png')} />
           )
         }}

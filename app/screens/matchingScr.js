@@ -21,6 +21,40 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
     const [failedMatch, setfailedMatch] = useState(false);
     const timeRef = useRef(null);
 
+    const [myInfo, setMyInfo] = useState({
+        nationality: '',
+        learningLanguages: [],
+    });
+
+    useEffect(() => {
+        const loadMyInfo = async () => {
+            try {
+                const userToken = await AsyncStorage.getItem('userToken'); // 로그인한 유저의 토큰 가져오기
+                const response = await fetch(`${API.USER}/mypage`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${userToken}`, // Bearer 토큰을 포함시킴
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                setMyInfo(prevMyInfo => ({
+                    ...prevMyInfo,
+                    nationality: data.usersDTO.nationality || prevMyInfo.nationality,
+                    learningLanguages: data.desiredLangDTO.map(lang => lang.lang) || prevMyInfo.learningLanguages
+                }));
+            } catch (error) {
+                console.error('Failed to load myInfo:', error);
+            }
+        }
+        loadMyInfo();
+    });
+
     const editMyInfo = () => {
         console.log('edit my info');
     }
@@ -89,18 +123,17 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
                     tableInfos={[
                         {
                             title: '국적',
-                            info: '한국'
+                            info: `${myInfo.nationality}`
                         },
                         {
                             title: '희망 학습 언어',
                             info: () => (
                                 <View style={{ flexDirection: 'row' }}>
-                                    <View style={miniLanguageBox.box}>
-                                        <Text style={miniLanguageBox.text}>영어</Text>
-                                    </View>
-                                    <View style={miniLanguageBox.box}>
-                                        <Text style={miniLanguageBox.text}>일본어</Text>
-                                    </View>
+                                    {myInfo.learningLanguages.map((language, index) => (
+                                        <View key={index} style={miniLanguageBox.box}>
+                                            <Text style={miniLanguageBox.text}>{language}</Text>
+                                        </View>
+                                    ))}
                                 </View>
                             ),
                             titleStyle: { fontSize: 11 }
