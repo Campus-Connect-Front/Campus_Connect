@@ -40,19 +40,24 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
                     'Authorization': `Bearer ${userToken}`, // Bearer 토큰을 포함시킴
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    userId:userToken,
-                }),
             });
-    
             if (!response.ok) {
                 throw new Error('매칭 요청 실패');
             }
     
-            
+            const data = await response.text();
+            console.log('Raw response data:', data); 
+            let roomId;
+            try {
+                const parsedData = JSON.parse(data); // JSON 형식으로 파싱
+        const roomId = parsedData.roomId; // roomId 추출
+
+            } catch (error) {
+                throw new Error('응답 데이터 파싱 실패');
+            }
             timeRef.current = setTimeout(() => {
               setModalVisible(false);
-              navigation.navigate('Done');
+              navigation.navigate('Done', {roomId});
             }, 2000);
         } catch (error) {
             console.error('매칭 중 오류 발생:', error);

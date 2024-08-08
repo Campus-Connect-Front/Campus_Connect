@@ -36,7 +36,7 @@ export const OneChatScreen = ({ route }) => {
   // sockJS 클라이언트 생성 및 websocket 연결
   useEffect(()=>{ 
     try {
-      const socket = new SockJS("http://192.168.0.3:8090/stomp/chat"); // WebSocket URL
+      const socket = new SockJS("http://172.30.1.69:8090/stomp/chat"); // WebSocket URL
       const stomp = new Client({
         webSocketFactory: () => socket,
         connectHeaders: {
