@@ -53,7 +53,7 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
             }
         }
         loadMyInfo();
-    });
+    }, []);
 
     const editMyInfo = () => {
         console.log('edit my info');
