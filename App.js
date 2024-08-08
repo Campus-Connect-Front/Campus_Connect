@@ -95,8 +95,8 @@ const MainTabNavigator = ({ navigation }) => {
             <FontAwesome5 name="book" size={size} color={focused ? '#5678F0' : '#787878'} />
           )
         }}
-        name="Board">{() => (<BoardScreen parentNav={navigation} />)}</Tab.Screen>
-      <Tab.Screen
+        name="Board">{() => (<BoardScreen parentNav={navigation} />)}</Tab.Screen>      
+     <Tab.Screen
         options={{
           headerShown: false,
           tabBarIcon: ({ focused }) => (
@@ -108,6 +108,7 @@ const MainTabNavigator = ({ navigation }) => {
           )
         }}
         name="Matching" component={MatchingScreen} />
+        
       <Tab.Screen
         options={{
           headerShown: false,

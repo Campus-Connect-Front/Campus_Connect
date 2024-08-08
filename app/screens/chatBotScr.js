@@ -16,7 +16,7 @@ export const ChatBotScreen = ({ route }) => {
 
   const botResponses = {
     '안녕하세요': '안녕하세요! 무엇을 도와드릴까요?',
-    '최근 학교 공지': '최근 학교 공지는 다음과 같습니다: ...',
+    '학교 공지': '학교 공지는 다음과 같습니다: ...',
     '수강신청 알림': '수강신청 알림입니다: ...',
     '기본': '죄송해요, 잘 이해하지 못했습니다. 다른 질문을 해주세요.',
   };
@@ -62,8 +62,8 @@ export const ChatBotScreen = ({ route }) => {
         </View>
         {!item.isMine && (
           <View style={styles.buttonsContainer}>
-            <TouchableOpacity style={styles.optionButton} onPress={() => handleSend('최근 학교 공지')}>
-              <Text style={styles.optionButtonText}>최근 학교 공지</Text>
+            <TouchableOpacity style={styles.optionButton} onPress={() => handleSend('학교 공지')}>
+              <Text style={styles.optionButtonText}>학교 공지</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.optionButton} onPress={() => handleSend('수강신청 알림')}>
               <Text style={styles.optionButtonText}>수강신청 알림</Text>

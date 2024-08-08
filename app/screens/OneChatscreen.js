@@ -36,7 +36,7 @@ export const OneChatScreen = ({ route }) => {
   // sockJS 클라이언트 생성 및 websocket 연결
   useEffect(()=>{ 
     try {
-      const socket = new SockJS("http://192.168.0.3:8090/stomp/chat"); // WebSocket URL
+      const socket = new SockJS("http://192.168.45.75:8090/stomp/chat"); // WebSocket URL
       const stomp = new Client({
         webSocketFactory: () => socket,
         connectHeaders: {
@@ -55,7 +55,7 @@ export const OneChatScreen = ({ route }) => {
         console.log('Connected');
         setConnected(true); // 연결 완료 상태로 업데이트
         // 저장된 채팅 불러오기
-        fetch(`${API.CHAT}/room/10`)
+        fetch(`${API.CHAT}/room/${roomId}`)
         .then(response => {
           console.log('Content-Type:', response.headers.get('Content-Type'));
          if (!response.ok) {
@@ -81,6 +81,7 @@ export const OneChatScreen = ({ route }) => {
 
 
         // 구독
+        //${roomId}로 바꿔야함
         stomp.subscribe(`/sub/chat/room/10`, (message) => {
           try {
             const receivedMessage = JSON.parse(message.body);
@@ -90,8 +91,9 @@ export const OneChatScreen = ({ route }) => {
               messageContent: receivedMessage.messageContent,
               timestamp: new Date(receivedMessage.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
               isMine: receivedMessage.senderId === userId, // 메시지의 발신자가 현재 사용자 ID와 일치하는지 확인
+              messageType: receivedMessage.messageType,
             };
-            setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+            setMessages((prevMessages) => [...prevMessages, formattedMessage]);
           } catch (error) {
             console.error('Message processing error: ', error);
             Alert.alert('Error', 'An error occurred while processing the message.');
@@ -167,10 +169,18 @@ export const OneChatScreen = ({ route }) => {
     });
   }, [navigation, chatName]);
 
-  const renderItem = ({ item, index }) => (
-    <View style={[styles.messageContainer, index === 0 ? styles.firstMessageContainer : null, item.isMine ? styles.myMessageContainer : styles.otherMessageContainer]}>
-      {!item.isMine && <Image source={require('../assets/circle_logo.png')} style={styles.profileImage} />}
-      <View>
+  const renderItem = ({ item, index }) => {
+    if (item.messageType === 'ENTER' || item.messageType === 'LEAVE') {
+      return (
+        <View style={styles.systemMessageContainer}>
+          <Text style={styles.systemMessageText}>{item.messageContent}</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={[styles.messageContainer, item.isMine ? styles.myMessageContainer : styles.otherMessageContainer]}>
+        {!item.isMine && <Image source={require('../assets/circle_logo.png')} style={styles.profileImage} />}
         <View style={[styles.bubbleContainer, item.isMine ? styles.myBubbleContainer : styles.otherBubbleContainer]}>
           <View style={[styles.bubble, item.isMine ? styles.myBubble : styles.otherBubble]}>
             <Text style={item.isMine ? styles.myMessageText : styles.otherMessageText}>{item.messageContent}</Text>
@@ -178,8 +188,8 @@ export const OneChatScreen = ({ route }) => {
           <Text style={item.isMine ? styles.myMessageTime : styles.otherMessageTime}>{item.timestamp}</Text>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const handleSend = () => {
     if (stompClient && stompClient.connected) {
@@ -305,25 +315,24 @@ const styles = StyleSheet.create({
   messageContainer: {
     flexDirection: 'row',
     marginVertical: 5,
-    alignItems: 'flex-end',
-  },
-  firstMessageContainer: {
-    marginTop: 20, 
+    alignItems: 'center',
   },
   myMessageContainer: {
     justifyContent: 'flex-end',
+    alignSelf: 'flex-end', // 오른쪽 정렬
     paddingRight: 10,
   },
   otherMessageContainer: {
     justifyContent: 'flex-start',
+    alignSelf: 'flex-start', // 왼쪽 정렬
     paddingLeft: 10,
   },
   bubbleContainer: {
-    flexDirection: 'column',
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   bubble: {
-    maxWidth: '100%',
+    maxWidth: '80%',
     padding: 10,
     borderRadius: 10,
   },
@@ -384,5 +393,13 @@ const styles = StyleSheet.create({
     fontSize: 10,
     alignSelf: 'flex-end',
     marginTop: 2,
+  },
+  systemMessageContainer: {
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  systemMessageText: {
+    color: '#888',
+    fontSize: 12,
   },
 });

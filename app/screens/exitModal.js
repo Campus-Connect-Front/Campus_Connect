@@ -1,8 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { Icon } from 'react-native-elements';
+import { useNavigation } from '@react-navigation/native';
 
 export const ExitModal = ({ visible, onClose, onExit }) => {
+  const navigation = useNavigation(); 
+
+  const handleExit = () => {
+    onExit();
+    navigation.navigate('ChatList');
+  };
+
   return (
     <Modal
       transparent={true}
@@ -16,7 +24,7 @@ export const ExitModal = ({ visible, onClose, onExit }) => {
             <Icon name="close" size={24} color="white" />
           </TouchableOpacity>
           <Text style={styles.modalTitle}>채팅방을 나가시겠습니까?</Text>
-          <TouchableOpacity style={styles.exitButton} onPress={onExit}>
+          <TouchableOpacity style={styles.exitButton} onPress={handleExit}>
             <Text style={styles.exitButtonText}>탈퇴하기</Text>
           </TouchableOpacity>
         </View>
