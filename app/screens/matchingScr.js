@@ -72,9 +72,21 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
                     'Content-Type': 'application/json',
                 },
             });
-            if (!response.ok) {
+            console.log('Response status:', response.status);
+
+            if (response.status === 204) { // 매칭 실패 응답 처리
+                failedMatching();
+            } else if (!response.ok) {
                 throw new Error('매칭 요청 실패');
+            } else {
+                const result = await response.json();
+                if (!result || !result.roomId) {
+                    failedMatching(); // 매칭 실패 처리
+                } else {
+                    MatchingCompleteScreen(); // 매칭 성공 처리
+                }
             }
+
         } catch (error) {
             console.error('매칭 중 오류 발생:', error);
             failedMatching(); // 실패했을 때 매칭 실패 처리
@@ -82,10 +94,28 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
 
     }
 
-    const stopMatching = () => {
-        clearTimeout(timeRef.current);
-        setModalVisible(false);
-    }
+    const stopMatching = async () => {
+        clearTimeout(timeRef.current); // 타임아웃 클리어
+        setModalVisible(false); // 모달 숨기기
+        try {
+            const userToken = await AsyncStorage.getItem('userToken'); // 로그인한 유저의 토큰 가져오기
+            const response = await fetch(`${API.MATCH}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${userToken}`, // Bearer 토큰을 포함시킴
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (response.ok) {
+                console.log('매칭이 취소되었습니다.'); // 매칭 취소 성공 메시지
+            } else {
+                console.error('매칭 취소 실패:', response.statusText); // 실패 메시지
+            }
+        } catch (error) {
+            console.error('매칭 취소 중 오류 발생:', error); // 오류 메시지
+        }
+    };
+    
 
     const failedMatching = () => {
         clearTimeout(timeRef.current);
