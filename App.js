@@ -103,8 +103,8 @@ const MainTabNavigator = ({ navigation }) => {
             <Image
               style={{ marginTop: 10 }}
               source={
-                focused ? require('../CC_front/app/assets/images/circle_logo_mini.png')
-                  : require('../CC_front/app/assets/images/circle_logo_mini.png')} />
+                focused ? require('../Campus_Connect/app/assets/images/circle_logo_mini.png')
+                  : require('../Campus_Connect/app/assets/images/circle_logo_mini.png')} />
           )
         }}
         name="Matching" component={MatchingScreen} />
@@ -170,6 +170,10 @@ export default function App() {
         <Stack.Screen
           name='BoardSearch'
           component={BoardSearchPage}
+        />
+        <Stack.Screen
+          name='matchingScr'  
+          component={MatchingScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

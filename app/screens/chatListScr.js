@@ -37,7 +37,6 @@ export const ChatListScreen = () => {
         fetchChats();
     }, [selectedChatType]);
 
-
     const renderItem = ({ item }) => (
         <TouchableOpacity 
         onPress={() => {
@@ -102,6 +101,7 @@ export const ChatListScreen = () => {
                 ListFooterComponent={
                     <TouchableOpacity
                         style={styles.newChatButton}
+                        onPress={() => navigation.navigate('matchingScr')}  // 네비게이션 추가
                     >
                         <ImageBackground
                             source={require('../assets/Logo_ver3.png')}
