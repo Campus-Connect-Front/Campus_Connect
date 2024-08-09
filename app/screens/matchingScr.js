@@ -62,9 +62,6 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
     const startMatching = async () => {
         setfailedMatch(false);
         setModalVisible(true);
-        // setTimeout(() => {
-        //     failedMatching();
-        // }, 1000);
 
         try {
             const userToken = await AsyncStorage.getItem('userToken'); // 로그인한 유저의 토큰 가져오기
@@ -78,21 +75,6 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
             if (!response.ok) {
                 throw new Error('매칭 요청 실패');
             }
-    
-            const data = await response.text();
-            console.log('Raw response data:', data); 
-            let roomId;
-            try {
-                const parsedData = JSON.parse(data); // JSON 형식으로 파싱
-        const roomId = parsedData.roomId; // roomId 추출
-
-            } catch (error) {
-                throw new Error('응답 데이터 파싱 실패');
-            }
-            timeRef.current = setTimeout(() => {
-              setModalVisible(false);
-              navigation.navigate('Done', {roomId});
-            }, 2000);
         } catch (error) {
             console.error('매칭 중 오류 발생:', error);
             failedMatching(); // 실패했을 때 매칭 실패 처리

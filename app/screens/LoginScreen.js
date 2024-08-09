@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, Image, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Text } from 'react-native';
-import { API } from '../../config'
+import { View, TextInput, StyleSheet, Image, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Text, Alert } from 'react-native';
+import { API } from '../../config';
 
 export default function LoginScreen({ navigation }) {
   const [studentId, setStudentId] = useState('');
@@ -8,10 +8,15 @@ export default function LoginScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = async() => {
-    // 로그인 로직 추가
+  const handleLogin = async () => {
+    if (!studentId || !password) {
+      Alert.alert("로그인 실패", "아이디와 비밀번호를 입력해 주세요.");
+      return;
+    }
+
     setLoading(true);
     setError('');
+
     try {
       const response = await fetch(`${API.USER}/login`, {
         method: 'POST',
@@ -24,18 +29,24 @@ export default function LoginScreen({ navigation }) {
         }).toString(),
       });
 
-      if (response.ok) {
-        // 로그인 성공 시
+      // 서버 응답을 텍스트로 읽기
+      const textResponse = await response.text();
+
+      // 실패 메시지 확인을 위한 HTML 패턴 (예시로 설정한 부분, 실제 HTML 내용에 맞게 조정 필요)
+      if (textResponse.includes("Invalid credentials") || textResponse.includes("Please sign in")) {
+        setError('아이디(학번) 또는 비밀번호가 올바르지 않습니다.');
+        Alert.alert("로그인 실패", '아이디(학번) 또는 비밀번호가 올바르지 않습니다.');
+      } else {
+        // 로그인 성공으로 가정 (정확한 성공 응답 내용에 따라 조정 필요)
         console.log('Login successful');
         navigation.navigate('Main');
-      } else {
-        // 로그인 실패 시
-        setError('로그인에 실패했습니다. 다시 시도해 주세요.');
       }
     } catch (error) {
-      setLoading(false);
+      console.error('네트워크 오류 발생:', error);
       setError('네트워크 오류가 발생했습니다. 다시 시도해 주세요.');
+      Alert.alert("로그인 실패", "네트워크 오류가 발생했습니다. 다시 시도해 주세요.");
     }
+
     setLoading(false);
   };
 
@@ -45,37 +56,37 @@ export default function LoginScreen({ navigation }) {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
         <Image source={require('../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
-      <View style={styles.inputContainer}>
-        <Text style={styles.fieldName}>아이디(학번)</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="아이디(학번)"
-          value={studentId}
-          onChangeText={setStudentId}
-        />
-      </View>
-      <View style={styles.inputContainer}>
-        <Text style={styles.fieldName}>비밀번호</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="비밀번호"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-      </View>
-      <TouchableOpacity
-        style={[styles.customButton, isLoginButtonDisabled && styles.disabledButton]}
-        onPress={handleLogin}
-        disabled={isLoginButtonDisabled}
-      >
-        <Text style={styles.buttonText}>로그인</Text>
-      </TouchableOpacity>
-      {loading && <Text>Loading...</Text>}
-      {error && <Text style={styles.errorText}>{error}</Text>}
-      <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-        <Text style={styles.signupText}>회원가입</Text>
-      </TouchableOpacity>
+        <View style={styles.inputContainer}>
+          <Text style={styles.fieldName}>아이디(학번)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="아이디(학번)"
+            value={studentId}
+            onChangeText={setStudentId}
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.fieldName}>비밀번호</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="비밀번호"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+        </View>
+        <TouchableOpacity
+          style={[styles.customButton, isLoginButtonDisabled && styles.disabledButton]}
+          onPress={handleLogin}
+          disabled={isLoginButtonDisabled}
+        >
+          <Text style={styles.buttonText}>로그인</Text>
+        </TouchableOpacity>
+        {loading && <Text>Loading...</Text>}
+        {error && <Text style={styles.errorText}>{error}</Text>}
+        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+          <Text style={styles.signupText}>회원가입</Text>
+        </TouchableOpacity>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -132,6 +143,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 14,
     color: '#5678F0',
+    textAlign: 'center',
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: 'red',
     textAlign: 'center',
   },
 });
