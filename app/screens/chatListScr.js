@@ -37,14 +37,13 @@ export const ChatListScreen = () => {
         fetchChats();
     }, [selectedChatType]);
 
-
     const renderItem = ({ item }) => (
         <TouchableOpacity 
         onPress={() => {
             if (selectedChatType === 'oneToOne') {
-                navigation.navigate('OneChat', { chatId: item.roomId, chatName: item.roomName });
+                navigation.navigate('OneChat', { chatId: item.roomId, chatName: item.roomName, roomId: item.roomId });
             } else {
-                navigation.navigate('GroupChat', { chatId: item.roomId, chatName: item.roomName });
+                navigation.navigate('GroupChat', { chatId: item.roomId, chatName: item.roomName, roomId: item.roomId });
             }
         }}
             style={styles.chatItem}>
@@ -102,6 +101,7 @@ export const ChatListScreen = () => {
                 ListFooterComponent={
                     <TouchableOpacity
                         style={styles.newChatButton}
+                        onPress={() => navigation.navigate('matchingScr')}  // 네비게이션 추가
                     >
                         <ImageBackground
                             source={require('../assets/Logo_ver3.png')}
