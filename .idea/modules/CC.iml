@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id="CC" external.linked.project.path="$MODULE_DIR$/../../CC_back" external.root.project.path="$MODULE_DIR$/../../CC_back" external.system.id="GRADLE" external.system.module.group="com.example" external.system.module.version="0.0.1-SNAPSHOT" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_17" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../../CC_back">
+      <excludeFolder url="file://$MODULE_DIR$/../../CC_back/.gradle" />
+      <excludeFolder url="file://$MODULE_DIR$/../../CC_back/build" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
