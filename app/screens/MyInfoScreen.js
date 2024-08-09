@@ -19,16 +19,7 @@ const MyInfoScreen = ({ navigation }) => {
         const profileData = await AsyncStorage.getItem('profile');
         if (profileData) {
           setProfile(JSON.parse(profileData));
-        } else {
-          // AsyncStorage에서 프로필 정보가 없을 경우 임시값 설정
-          setProfile({
-            nickname: '수정이',
-            studentId: '20XXXXXX',
-            department: '컴퓨터공학과',
-            birthdate: '20XX.XX.XX',
-            name: '김수정',
-          });
-        }
+        } 
       } catch (error) {
         Alert.alert('오류', '프로필 정보를 불러오는 데 실패했습니다.');
       }

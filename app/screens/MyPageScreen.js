@@ -18,21 +18,10 @@ export default function MyPageScreen({ navigation }) {
     learningLanguages: [],
   });
 
-  const defaultProfile = {
-    university: '성신여자대학교',
-    nickname: '수정이',
-    birthdate: '20XX.XX.XX',
-    department: '컴퓨터공학과',
-    studentId: '20XXXXXX',
-    nationality: '한국',
-    languages: ['한국어', '영어'],
-    learningLanguages: ['영어', '일본어'],
-    imgUrl:'null',
-  };
-
   const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
+    // 유저 정보 띄우기 
     const loadProfile = async () => {
       try {
         const userToken = await AsyncStorage.getItem('userToken'); // 로그인한 유저의 토큰 가져오기
@@ -54,46 +43,47 @@ export default function MyPageScreen({ navigation }) {
             university: data.usersDTO.university || prevProfile.university,
             nickname: data.usersDTO.nickName || prevProfile.nickname,
             birthdate: data.usersDTO.birthday || prevProfile.birthdate,
-            department: data.usersDTO.department || prevProfile.department,
-            studentId: data.usersDTO.studentId || prevProfile.studentId,
+            department: data.userAuthenticationDTO.major || prevProfile.department,
+            studentId: data.userAuthenticationDTO.studentId || prevProfile.studentId,
             nationality: data.usersDTO.nationality || prevProfile.nationality,
             languages: data.availableLangDTO.map(lang => lang.lang) || prevProfile.languages,
             learningLanguages: data.desiredLangDTO.map(lang => lang.lang) || prevProfile.learningLanguages,
             imgUrl: data.usersDTO.imgUrl || prevProfile.imgUrl,
         }));
+        // 프로필 이미지 띄우기
         loadProfileImage(data.usersDTO.imgUrl);
-    } catch (error) {
-        console.error('Failed to load profile:', error);
-    }
-    };
-
-    const loadProfileImage = async (imgUrl) => {
-      if (!imgUrl) console.log("파일이 없습니다");
-      try {
-          const userToken = await AsyncStorage.getItem('userToken');
-          const response = await fetch(`${API.USER}/images/${imgUrl}`, {
-              method: 'GET',
-              headers: {
-                  'Authorization': `Bearer ${userToken}`,
-              },
-          });
-
-          if (!response.ok) {
-              throw new Error('Network response was not ok');
-          }
-          const imageUri = response.url;
-          setProfileImage(imageUri);
       } catch (error) {
-          console.error('Failed to load profile image:', error);
+        console.error('Failed to load profile:', error);
       }
-  };
+    };
 
       const unsubscribe = navigation.addListener('focus', () => {
       loadProfile(); 
-      loadProfileImage();
     });
+
     return unsubscribe;
   }, [navigation]);
+
+  const loadProfileImage = async (imgUrl) => {
+    if (!imgUrl) console.log("파일이 없습니다");
+    try {
+        const userToken = await AsyncStorage.getItem('userToken');
+        const response = await fetch(`${API.USER}/images/${imgUrl}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${userToken}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const imageUri = response.url;
+        setProfileImage(imageUri);
+    } catch (error) {
+        console.error('Failed to load profile image:', error);
+    }
+  };
 
 
   // 프로필 이미지 수정하기
@@ -128,8 +118,8 @@ export default function MyPageScreen({ navigation }) {
     const formData = new FormData();
     formData.append('file', {
         uri: imageUri,
-        type: 'image/jpeg', // 혹은 'image/png'
-        name: 'profile.jpg', // 실제로는 파일 이름이 필요할 수 있습니다.
+        type: 'image', // 혹은 'image/png'
+        name: 'profile', // 실제로는 파일 이름이 필요할 수 있습니다.
     });
 
     try {
@@ -140,14 +130,12 @@ export default function MyPageScreen({ navigation }) {
             },
             body: formData,
         });
-
-        const data = await response.json();
         if (response.ok) {
-            console.log('이미지가 성공적으로 업로드되었습니다:', data);
+            console.log('이미지가 성공적으로 업로드되었습니다:');
             // 성공 시 프로필 이미지를 다시 로드
-            await loadProfileImage();
+            await loadProfileImage(imageUri);
         } else {
-            console.error('이미지 업로드 실패:', data);
+            console.error('이미지 업로드 실패:');
             Alert.alert('오류', data); // 오류 메시지 표시
         }
     } catch (error) {
