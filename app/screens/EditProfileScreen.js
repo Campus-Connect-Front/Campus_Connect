@@ -168,16 +168,6 @@ export default function EditProfileScreen({ navigation }) {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>학번</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="학번"
-            value={profile.studentId}
-            onChangeText={(text) => setProfile({ ...profile, studentId: text })}
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
           <Text style={styles.label}>학과</Text>
           <TextInput
             style={styles.input}
