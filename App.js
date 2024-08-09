@@ -95,19 +95,20 @@ const MainTabNavigator = ({ navigation }) => {
             <FontAwesome5 name="book" size={size} color={focused ? '#5678F0' : '#787878'} />
           )
         }}
-        name="Board">{() => (<BoardScreen parentNav={navigation} />)}</Tab.Screen>
-      <Tab.Screen
+        name="Board">{() => (<BoardScreen parentNav={navigation} />)}</Tab.Screen>      
+     <Tab.Screen
         options={{
           headerShown: false,
           tabBarIcon: ({ focused }) => (
             <Image
               style={{ marginTop: 10 }}
               source={
-                focused ? require('../CC_front/app/assets/images/circle_logo_mini.png')
-                  : require('../CC_front/app/assets/images/circle_logo_mini.png')} />
+                focused ? require('../Campus_Connect/app/assets/images/circle_logo_mini.png')
+                  : require('../Campus_Connect/app/assets/images/circle_logo_mini.png')} />
           )
         }}
         name="Matching" component={MatchingScreen} />
+        
       <Tab.Screen
         options={{
           headerShown: false,
@@ -169,6 +170,10 @@ export default function App() {
         <Stack.Screen
           name='BoardSearch'
           component={BoardSearchPage}
+        />
+        <Stack.Screen
+          name='matchingScr'  
+          component={MatchingScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>
