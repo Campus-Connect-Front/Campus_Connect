@@ -1,5 +1,5 @@
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useIsFocused } from '@react-navigation/native';
 import * as React from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
@@ -17,41 +17,46 @@ import { Feather } from '@expo/vector-icons';
 import { BoardMatchingScreen } from './boardMatchingScr';
 import { BoardEditScreen } from './boardEditScr';
 import { selectButtonStyle } from '../assets/styles/globalStyles';
+import { API } from '../../config';
+import { Splash, SplashIcon } from './loadingScreen';
 
 const Tab = createMaterialTopTabNavigator();
 const Stack = createStackNavigator();
 
-const BoarderTab = ({ parentNav, tag }) => {
-    return (
-        <View style={{ flex: 1, backgroundColor: '#EBEDF6' }}>
-            <FlatList
-                data={[
-                    { id: '0001', title: '완전 기초부터 공부하실 분 구합니다!', content: '주 2회 영어 회화 스터디', language: '영어', recruit: '4', frequency: '2', way: 'nftf', days: ['토', '일'] },
-                    { id: '0002', title: '한국 문화 교류', content: '주 1회 한국 문화 체험', language: '한국어', recruit: '2', frequency: '1', way: 'ftf', days: ['월'] },
-                ]}
-                renderItem={({ item }) => {
-                    return (
-                        <View style={boardStyle.BoardContanier} >
-                            <TouchableOpacity
-                                style={{ paddingHorizontal: 20, paddingVertical: 15 }}
-                                onPress={() => parentNav.navigate('BoardDetail', item)}>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text style={boardStyle.TagText}>{item.language}</Text>
-                                </View>
-                                <Text style={boardStyle.TitleText}>{item.title}</Text>
-                                <Text style={boardStyle.InfoText}>모집인원 {item.recruit}명 | 주 {item.frequency}회 | {item.way == 'ftf' ? '대면' : '비대면'}</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )
-                }
-                }
-            />
-        </View>
-    )
-}
 
-const BoardList = ({ parentNav, navigation }) => {
+const BoardList = React.forwardRef((props, ref) => {
+    const { parentNav, navigation } = props;
     const [language, setLanguage] = React.useState({ data: '전체', index: 0 });
+    const [splash, setSplash] = React.useState(null);
+    const [postList, setPostList] = React.useState({});
+
+    const fetchBoard = async () => {
+        setSplash(true);
+        try {
+            const response = await fetch(
+                (language.data == "전체") ?
+                    `${API.POST}/postList` : `${API.POST}/postList?language=${language.data}`
+            );
+
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setPostList(data);
+        } catch (error) {
+            console.error('Error fetching board list :', error);
+        }
+        setSplash(false);
+    };
+
+    React.useImperativeHandle(ref, () => ({
+        fetchBoard: fetchBoard
+    }));
+
+    useEffect(() => {
+        fetchBoard();
+    }, [language]);
 
     useEffect(() => {
         navigation.setOptions({
@@ -64,6 +69,7 @@ const BoardList = ({ parentNav, navigation }) => {
                 })
             },
             headerShadowVisible: false,
+            headerLeft: () => (null),
             headerRight: () => (
                 <View style={{ flexDirection: 'row' }}>
                     <TouchableOpacity style={{ justifyContent: 'center', alignItems: 'center', marginHorizontal: 10 }}
@@ -92,20 +98,60 @@ const BoardList = ({ parentNav, navigation }) => {
                     />
                 </ScrollView>
             </View>
-            <BoarderTab parentNav={parentNav} tag={language} />
+            <View style={{ flex: 1, backgroundColor: '#EBEDF6' }}>
+                <FlatList
+                    data={postList}
+                    renderItem={({ item }) => {
+                        return (
+                            <View style={boardStyle.BoardContanier} >
+                                <TouchableOpacity
+                                    style={{ paddingHorizontal: 20, paddingVertical: 15 }}
+                                    onPress={() => parentNav.navigate('BoardDetail', item)}>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                        <Text style={boardStyle.TagText}>{item.language}</Text>
+                                    </View>
+                                    <Text style={boardStyle.TitleText}>{item.postTitle}</Text>
+                                    <Text style={boardStyle.InfoText}>모집인원 {item.peopleNum}명 | 주 {item.dayOfWeek}회 | {item.faceToFace == "대면" ? "대면" : "비대면"}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )
+                    }
+                    }
+                />
+                {splash && <SplashIcon />}
+            </View>
             <TouchableOpacity style={boardStyle.WriteButton}
                 onPress={() => parentNav.navigate('BoardWrite')}>
                 <Octicons name="pencil" size={35} color="#5678F0" />
             </TouchableOpacity>
         </View>
     )
-}
+});
 
 export const BoardSearchPage = ({ navigation }) => {
     const [load, setLoad] = React.useState(false);
     const [userInput, setUserInput] = React.useState('');
+    const [postList, setPostList] = React.useState([]);
+
+    const serachPost = async () => {
+        try {
+            const response = await fetch(
+                `${API.POST}/searchPost?title=${userInput}`
+            );
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            setPostList(data);
+        } catch (error) {
+            console.error('Error fetching search list :', error);
+        }
+    };
+
     const Searching = () => {
-        setLoad(true);
+        serachPost();
     }
     useEffect(() => {
         navigation.setOptions({
@@ -134,10 +180,7 @@ export const BoardSearchPage = ({ navigation }) => {
         <View style={{ flex: 1, backgroundColor: '#EBEDF6' }}>
             <FlatList
                 style={{ paddingTop: 10 }}
-                data={(load) ? [
-                    { id: '0001', title: '완전 기초부터 공부하실 분 구합니다!', content: '주 2회 영어 회화 스터디', language: '영어', recruit: '4', frequency: '2', way: 'nftf', days: ['토', '일'] },
-                    { id: '0002', title: '한국 문화 교류', content: '주 1회 한국 문화 체험', language: '한국어', recruit: '2', frequency: '1', way: 'ftf', days: ['월'] },
-                ] : null}
+                data={postList}
                 renderItem={({ item }) => {
                     return (
                         <View style={boardStyle.BoardContanier} >
@@ -147,8 +190,8 @@ export const BoardSearchPage = ({ navigation }) => {
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <Text style={boardStyle.TagText}>{item.language}</Text>
                                 </View>
-                                <Text style={boardStyle.TitleText}>{item.title}</Text>
-                                <Text style={boardStyle.InfoText}>모집인원 {item.recruit}명 | 주 {item.frequency}회 | {item.way == 'ftf' ? '대면' : '비대면'}</Text>
+                                <Text style={boardStyle.TitleText}>{item.postTitle}</Text>
+                                <Text style={boardStyle.InfoText}>모집인원 {item.chatRoomId.peopleNum}명 | 주 {item.dayOfWeek}회 | {item.faceToFace == '대면' ? '대면' : '비대면'}</Text>
                             </TouchableOpacity>
                         </View>
                     )
@@ -165,6 +208,14 @@ export const BoardScreen = ({ parentNav, navigation }) => {
         'Pretendard-Regular': require('../assets/fonts/Pretendard-Regular.ttf')
     });
 
+    const boardListRef = React.useRef();
+    const isFocused = useIsFocused();
+    useEffect(() => {
+        setTimeout(() => {
+            boardListRef.current.fetchBoard();
+        }, 1000);
+    }, [isFocused]);
+
     useEffect(() => {
         if (loaded || error) {
             SplashScreen.hideAsync();
@@ -180,7 +231,7 @@ export const BoardScreen = ({ parentNav, navigation }) => {
             <Stack.Navigator initialRouteName="Main">
                 <Stack.Screen
                     name="Main"
-                >{(props) => <BoardList parentNav={parentNav} {...props} />}</Stack.Screen>
+                >{(props) => <BoardList ref={boardListRef} parentNav={parentNav} {...props} />}</Stack.Screen>
             </Stack.Navigator>
         </NavigationContainer>
     )

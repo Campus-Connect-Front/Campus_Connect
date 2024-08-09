@@ -12,26 +12,28 @@ import Toast from 'react-native-toast-message';
 import { alertButtonStyle, horizontalLineStyle, selectButtonStyle, toastConfig } from '../assets/styles/globalStyles';
 import DoneButton from '../components/DoneButton';
 import AlertModal from '../components/AlertModal';
+import { API } from '../../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const removeSpace = text => (text.replace(/\s/g, ''))
 
 export const BoardWriteScreen = ({ navigation }) => {
-    const [selectedWay, setSelectedWay] = useState(null);
+    const [faceToFace, setFaceToFace] = useState(null);
     const [selectedDays, setSelectedDays] = useState(null);
     const [open, setOpen] = useState(false);
     const [language, setLanguage] = useState(null);
     const [items, setItems] = useState([
-        { label: '한국어', value: 'korean' },
-        { label: '영어', value: 'english' },
-        { label: '중국어', value: 'chinese' },
-        { label: '일본어', value: 'japanese' },
-        { label: '스페인어', value: 'spanish' },
-        { label: '불어', value: 'french' },
+        { label: '한국어', value: '한국어' },
+        { label: '영어', value: '영어' },
+        { label: '중국어', value: '중국어' },
+        { label: '일본어', value: '일본어' },
+        { label: '스페인어', value: '스페인어' },
+        { label: '불어', value: '불어' },
     ]);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [chatname, setChatname] = useState('');
-    const [recruit, setRecruit] = useState('');
+    const [recruit, setRecruit] = useState();
 
     const [modalVisible, setModalVisible] = useState(false);
 
@@ -67,6 +69,51 @@ export const BoardWriteScreen = ({ navigation }) => {
         });
 
     }, []);
+
+    const checkDays = () => {
+        let dayArray = ['월', '화', '수', '목', '금', '토', '일'];
+        let weeklyInfos = [];
+        for (let i = 0; i < dayArray.length; i++) {
+            if (selectedDays[i] == true) {
+                weeklyInfos = [...weeklyInfos, { week: dayArray[i] }]
+            }
+        }
+        return weeklyInfos;
+    }
+
+    const writePost = async () => {
+        const userToken = await AsyncStorage.getItem('userToken');
+        let count = selectedDays.filter(element => true == element).length;
+        let roomType = 1;
+        let weeklyInfos = checkDays();
+        try {
+            const response = await fetch(`${API.POST}/writePost`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${userToken}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    dayOfWeek: count,
+                    faceToFace: faceToFace.data,
+                    language: language,
+                    postContent: content,
+                    postTitle: title,
+                    peopleNum: Number(recruit),
+                    chatRoomName: chatname,
+                    roomType: roomType,
+                    weeklyInfos: weeklyInfos
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.status}`);
+            }
+
+        } catch (error) {
+            console.error('Error editng post :', error);
+        }
+    };
 
 
     const CreateStudy = () => {
@@ -126,7 +173,7 @@ export const BoardWriteScreen = ({ navigation }) => {
                 bottomOffset: 50,
                 position: 'bottom'
             });
-        } else if (selectedWay == null) {
+        } else if (faceToFace == null) {
             Toast.show({
                 type: 'default',
                 text1: '스터디 방식을 선택해 주세요.',
@@ -134,7 +181,7 @@ export const BoardWriteScreen = ({ navigation }) => {
                 position: 'bottom'
             });
         } else {
-            console.log('create study successful');
+            writePost();
             navigation.pop();
         }
     }
@@ -209,7 +256,7 @@ export const BoardWriteScreen = ({ navigation }) => {
                         <SingleSelectButton
                             count={2}
                             textArray={['대면', '비대면']}
-                            getSelected={setSelectedWay}
+                            getSelected={setFaceToFace}
                             selectedButtonColor="#000000"
                             selectedTextColor="#ffffff"
                             containerStyle={{ flexDirection: 'row', marginTop: 5, marginBottom: 10 }}
