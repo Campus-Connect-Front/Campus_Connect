@@ -266,7 +266,7 @@ export default function MyPageScreen({ navigation }) {
         tableInfos={[
           {
             title: '국적',
-            info: profile.nationality || '정보 없음',
+            info: profile.nationality || '로딩 중...',
           },
           {
             title: '구사 가능 언어',
@@ -280,7 +280,7 @@ export default function MyPageScreen({ navigation }) {
                     </View>
                   ))
                 ) : (
-                  <Text>정보 없음</Text>
+                  <Text>로딩 중...</Text>
                 )}
               </View>
             ),
@@ -297,7 +297,7 @@ export default function MyPageScreen({ navigation }) {
                     </View>
                   ))
                 ) : (
-                  <Text>정보 없음</Text>
+                  <Text>로딩 중...</Text>
                 )}
               </View>
             ),
