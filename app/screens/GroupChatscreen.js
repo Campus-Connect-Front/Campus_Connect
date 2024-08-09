@@ -37,7 +37,11 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
   // sockJS 클라이언트 생성 및 websocket 연결
   useEffect(() => {
     try {
+<<<<<<< HEAD
       const socket = new SockJS("http://192.168.45.75:8090/stomp/chat");
+=======
+      const socket = new SockJS("http://172.30.1.69:8090/stomp/chat"); // WebSocket URL
+>>>>>>> 93f001098c5a31d854e8c053fc151b9005f8f32d
       const stomp = new Client({
         webSocketFactory: () => socket,
         connectHeaders: {

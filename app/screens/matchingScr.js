@@ -53,7 +53,7 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
             }
         }
         loadMyInfo();
-    });
+    }, []);
 
     const editMyInfo = () => {
         console.log('edit my info');
@@ -62,9 +62,6 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
     const startMatching = async () => {
         setfailedMatch(false);
         setModalVisible(true);
-        // setTimeout(() => {
-        //     failedMatching();
-        // }, 1000);
 
         try {
             const userToken = await AsyncStorage.getItem('userToken'); // 로그인한 유저의 토큰 가져오기
@@ -74,20 +71,10 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
                     'Authorization': `Bearer ${userToken}`, // Bearer 토큰을 포함시킴
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    userId: userToken,
-                }),
             });
-
             if (!response.ok) {
                 throw new Error('매칭 요청 실패');
             }
-
-
-            timeRef.current = setTimeout(() => {
-                setModalVisible(false);
-                navigation.navigate('Done');
-            }, 2000);
         } catch (error) {
             console.error('매칭 중 오류 발생:', error);
             failedMatching(); // 실패했을 때 매칭 실패 처리
