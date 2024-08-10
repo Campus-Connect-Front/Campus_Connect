@@ -7,12 +7,50 @@ import { infoBoxStyles } from '../assets/styles/globalStyles';
 import DoneButton from '../components/DoneButton';
 import InfoTableBox from '../components/InfoTableBox';
 import { Ionicons } from '@expo/vector-icons';
+import { API } from '../../config';
+import { Splash, SplashIcon } from './loadingScreen';
 
-export const BoardMatchingScreen = ({parentNav, navigation}) => {
+export const BoardMatchingScreen = ({ item, parentNav, navigation }) => {
+    const [splash, setSplash] = React.useState(null);
+    const roomId = item.chatRoomId.roomId;
+    const roomName = item.chatRoomId.roomName;
+    const recruit = item.chatRoomId.peopleNum;
+    const language = item.language;
+    const [attendNum, setAttendNum] = React.useState(0);
+
     const [loaded, error] = useFonts({
         'Pretendard-Bold': require('../assets/fonts/Pretendard-Bold.ttf'),
         'Pretendard-Regular': require('../assets/fonts/Pretendard-Regular.ttf')
     });
+
+    const getChatInfo = async () => {
+        setSplash(true);
+        try {
+            const response = await fetch(
+                `${API.CHAT}/room/${roomId}/member`
+            );
+
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setAttendNum(data.length);
+
+        } catch (error) {
+            console.error('Error fetching board matching :', error);
+        }
+        setSplash(false);
+    }
+
+    const enterGroupRoom = () => {
+        console.log('enter group chat room');
+        parentNav.navigate('GroupChat', item);
+    }
+
+    useEffect(() => {
+        getChatInfo();
+    }, []);
 
     useEffect(() => {
         if (loaded || error) {
@@ -45,16 +83,16 @@ export const BoardMatchingScreen = ({parentNav, navigation}) => {
                     tableInfos={[
                         {
                             title: '방제목',
-                            info: '영어 AtoZ'
+                            info: roomName
                         },
                         {
                             title: '인원',
-                            info: '5/6'
+                            info: `${attendNum}/${recruit}`
                         },
                         {
                             title: '스터디 언어',
                             titleStyle: { fontSize: 11 },
-                            info: '영어'
+                            info: language
                         }
                     ]}
                 />
@@ -62,8 +100,12 @@ export const BoardMatchingScreen = ({parentNav, navigation}) => {
             <View style={{ marginTop: 20, marginBottom: '20%' }}>
                 <DoneButton
                     text='채팅 시작하기'
+                    onPress={() => {
+                        enterGroupRoom();
+                    }}
                 />
             </View>
+            {splash && <Splash />}
         </View>
     )
 }

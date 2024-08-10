@@ -13,10 +13,11 @@ import AlertModal from '../components/AlertModal';
 import { alertButtonStyle, miniLanguageBox } from '../assets/styles/globalStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API } from '../../config'
+import { Splash } from './loadingScreen';
 
 
 const MatchingWaitScreen = ({ parentNav, navigation }) => {
-
+    const [splash, setSplash] = React.useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [failedMatch, setfailedMatch] = useState(false);
     const timeRef = useRef(null);
@@ -28,6 +29,7 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
 
     useEffect(() => {
         const loadMyInfo = async () => {
+            setSplash(true);
             try {
                 const userToken = await AsyncStorage.getItem('userToken'); // 로그인한 유저의 토큰 가져오기
                 const response = await fetch(`${API.USER}/mypage`, {
@@ -51,13 +53,10 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
             } catch (error) {
                 console.error('Failed to load myInfo:', error);
             }
+            setSplash(false);
         }
         loadMyInfo();
     }, []);
-
-    const editMyInfo = () => {
-        console.log('edit my info');
-    }
 
     const startMatching = async () => {
         setfailedMatch(false);
@@ -179,6 +178,7 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
                 }]}
                 onRequestClose={() => { (failedMatch) ? setModalVisible(false) : stopMatching(); }}
             />
+            {splash && <Splash />}
         </View>
     )
 }
