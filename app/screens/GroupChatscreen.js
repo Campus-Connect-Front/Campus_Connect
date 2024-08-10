@@ -23,6 +23,7 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
   const [participants, setParticipants] = useState([...initialParticipants, { id: 'ME', name: userName, profileImage: require('../assets/circle_logo.png') }]);
+  const [hasEntered, setHasEntered] = useState(false); // 입장 메시지가 한 번만 보내지도록 관리
   const flatListRef = useRef(null);
 
   // WebSocket 관련 설정
@@ -34,9 +35,8 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
     TextDecoder: TextEncodingPolyfill.TextDecoder,
   });
 
-  // sockJS 클라이언트 생성 및 websocket 연결
   useEffect(() => {
-    const socket = new SockJS("http://192.168.45.75:8090/stomp/chat");
+    const socket = new SockJS("http://192.168.45.16:8090/stomp/chat");
     const stomp = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {
@@ -66,7 +66,7 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
         })
         .then(data => {
           console.log('Fetched data:', data);
-          setMessages(data);
+          setMessages((prevMessages) => [...prevMessages, ...data]);
         })
         .catch(error => {
           console.error('Error fetching messages: ', error);
@@ -81,8 +81,10 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
             id: receivedMessage.id,
             messageContent: receivedMessage.messageContent,
             timestamp: new Date(receivedMessage.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-            isMine: receivedMessage.senderId === userId, // 메시지의 발신자가 현재 사용자 ID와 일치하는지 확인
+            isMine: receivedMessage.senderId === userId, 
             system: receivedMessage.messageType === 'ENTER' || receivedMessage.messageType === 'LEAVE',
+            senderName: receivedMessage.senderName,
+            profileImage: receivedMessage.profileImage || require('../assets/circle_logo.png'),
           };
           setMessages((prevMessages) => [...prevMessages, formattedMessage]);
         } catch (error) {
@@ -91,15 +93,18 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
         }
       });
   
-      // 유저 입장 메시지 발송
-      stomp.publish({
-        destination: '/pub/chat/enter',
-        body: JSON.stringify({
-          roomId: roomId,
-          userId: userId,
-          messageType: 'ENTER'
-        }),
-      });
+      // 유저 입장 메시지 발송 (최초 입장 시 한 번만)
+      if (!hasEntered) {
+        stomp.publish({
+          destination: '/pub/chat/enter',
+          body: JSON.stringify({
+            roomId: roomId,
+            userId: userId,
+            messageType: 'ENTER'
+          }),
+        });
+        setHasEntered(true); // 입장 메시지를 보냈음을 기록
+      }
     };
   
     stomp.onStompError = (frame) => {
@@ -114,14 +119,6 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
     return () => {
       if (stomp) {
         try {
-          stomp.publish({
-            destination: '/pub/chat/exit',
-            body: JSON.stringify({
-              roomId: roomId,
-              userId: userId,
-              messageType: 'LEAVE'
-            }),
-          });
           stomp.deactivate();
         } catch (error) {
           console.error('Error during disconnection: ', error);
@@ -129,51 +126,7 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
         }
       }
     };
-  }, [roomId, userId]);
-  
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: chatName,
-      headerRight: () => (
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Icon
-            name="menu"
-            size={25}
-            color="black"
-            style={{ marginRight: 15 }}
-            onPress={() => setIsModalVisible(true)}
-          />
-        </View>
-      ),
-    });
-  }, [navigation, chatName]);
-
-
-  useEffect(() => {
-    const entryMessageId = `system-entry-${Date.now()}`;
-    const exitMessageId = `system-exit-${Date.now() + 1}`; // +1 to ensure different id
-
-    // 사용자 입장 메시지 추가
-    const entryMessage = {
-      id: entryMessageId,
-      text: `${userName}님이 입장했습니다.`,
-      system: true,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-    setMessages(prevMessages => [...prevMessages, entryMessage]);
-    flatListRef.current.scrollToEnd({ animated: true });
-
-    // 사용자 퇴장 메시지 추가
-    return () => {
-      const exitMessage = {
-        id: exitMessageId,
-        text: `${userName}님이 퇴장했습니다.`,
-        system: true,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages(prevMessages => [...prevMessages, exitMessage]);
-    };
-  }, [userName]);
+  }, [roomId, userId, hasEntered]);
 
   const sendMessage = () => {
     if (stompClient && stompClient.connected) {
@@ -196,7 +149,6 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
           }
         ]);
   
-        // WebSocket으로 메시지 전송
         stompClient.publish({
           destination: '/pub/chat/message',
           body: JSON.stringify(newMessage),
@@ -211,9 +163,42 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
       Alert.alert('Error', 'WebSocket is not connected.');
     }
   };
-  
-  
 
+  //handleExit 함수 
+  const handleExit = async () => {
+    setIsModalVisible(false); 
+    const token = await AsyncStorage.getItem('token');
+     
+    fetch(`${API.CHAT}/room/${roomId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        console.log('탈퇴 성공');
+        stompClient.publish({
+          destination: '/pub/chat/exit',
+          body: JSON.stringify({
+            roomId: roomId,
+            userId: userId,
+            messageType: 'LEAVE'
+          }),
+        });
+        navigation.goBack(); // 채팅방에서 나가기
+      } else {
+        console.error('탈퇴 실패');
+        Alert.alert('탈퇴에 실패했습니다');
+      }
+    })
+    .catch(error => {
+      console.error('탈퇴 실패', error);
+      Alert.alert('탈퇴에 실패했습니다');
+    });
+  };
+  
   const renderItem = ({ item }) => {
     if (item.system) {
       return (
@@ -226,13 +211,16 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
     return (
       <View style={[styles.messageContainer, item.isMine ? styles.myMessageContainer : styles.otherMessageContainer]}>
         {!item.isMine && (
-        <View style={styles.profileContainer}> {/* Text 외부에 View 추가 */}
-          <Image source={require('../assets/circle_logo.png')} style={styles.profileImage} />
-          <Text style={styles.senderName}>{item.sender}</Text> {/* 상대방 이름 표시 */}
+        <View style={styles.profileContainer}>
+          <Image 
+            source={item.profileImage} 
+            style={styles.profileImage} 
+          />
+          <Text style={styles.senderName}>{item.senderName}</Text> 
         </View>
       )}
         <View>
-          {!item.isMine && <Text style={styles.senderName}>{item.sender}</Text>}
+          {!item.isMine && <Text style={styles.senderName}>{item.senderName}</Text>}
           <View style={[styles.bubbleContainer, item.isMine ? styles.myBubbleContainer : styles.otherBubbleContainer]}>
             <View style={[styles.bubble, item.isMine ? styles.myBubble : styles.otherBubble]}>
               <Text style={item.isMine ? styles.myMessageText : styles.otherMessageText}>{item.messageContent}</Text>
@@ -244,8 +232,6 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
     );
   };
   
-  
-
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={80}>
       <FlatList
@@ -300,6 +286,7 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
         onClose={() => setIsModalVisible(false)}
         participants={participants}
         userName={userName}
+        onExit={handleExit} 
       />
     </KeyboardAvoidingView>
   );
@@ -371,10 +358,10 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   profileImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
+    width: 40, 
+    height: 40, 
+    borderRadius: 20, 
+    marginRight: 10, 
   },
   senderName: {
     color: '#9291A6',
@@ -404,10 +391,6 @@ const styles = StyleSheet.create({
   },
   emojiButton: {
     marginRight: 10,
-  },
-  sendButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
   },
   myMessageTime: {
     color: '#9291A6',
