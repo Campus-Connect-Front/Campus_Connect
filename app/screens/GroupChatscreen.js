@@ -128,6 +128,24 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
     };
   }, [roomId, userId, hasEntered]);
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: chatName,
+      headerRight: () => (
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Icon
+            name="menu"
+            size={25}
+            color="black"
+            style={{ marginRight: 15 }}
+            onPress={() => setIsModalVisible(true)}
+          />
+        </View>
+      ),
+    });
+  }, [navigation, chatName]);
+  
+
   const sendMessage = () => {
     if (stompClient && stompClient.connected) {
       const cleanedMessage = inputText.replace(/\n/g, ''); 

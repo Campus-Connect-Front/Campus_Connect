@@ -49,7 +49,7 @@ export const OneChatScreen = ({ route }) => {
 
     loadProfileImages(); // 컴포넌트가 마운트될 때 프로필 이미지 로드
 
-    const socket = new SockJS("http://192.168.45.16:8090/stomp/chat");
+    const socket = new SockJS("http://192.168.45.30:8090/stomp/chat");
     const stomp = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {
