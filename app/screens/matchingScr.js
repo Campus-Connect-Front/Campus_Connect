@@ -43,7 +43,6 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-
                 const data = await response.json();
                 setMyInfo(prevMyInfo => ({
                     ...prevMyInfo,
@@ -71,7 +70,6 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
                     'Content-Type': 'application/json',
                 },
             });
-            console.log('Response status:', response.status);
 
             if (response.status === 204) { // 매칭 실패 응답 처리
                 failedMatching();
@@ -82,7 +80,7 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
                 if (!result || !result.roomId) {
                     failedMatching(); // 매칭 실패 처리
                 } else {
-                    MatchingCompleteScreen(); // 매칭 성공 처리
+                    navigation.navigate('Done', { chatName: result.roomName, roomId: result.roomId}); // 매칭 성공 처리
                 }
             }
 
@@ -114,7 +112,7 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
             console.error('매칭 취소 중 오류 발생:', error); // 오류 메시지
         }
     };
-    
+
 
     const failedMatching = () => {
         clearTimeout(timeRef.current);
@@ -183,38 +181,83 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
     )
 }
 
-const MatchingCompleteScreen = () => {
+const MatchingCompleteScreen = ({ parentNav, route }) => {
+    const [userId, setUserId] = useState();
+    const [splash, setSplash] = React.useState(null);
+    const [nationality, setNationality] = useState();
+    const [languages, setLanguages] = useState();
 
+    // 채팅방 입장
     const enterChatRoom = () => {
-        console.log('enter chat room');
+        parentNav.navigate('OneChat', { chatName: route.params.chatName, roomId: route.params.roomId, userId: userId });
     }
+
+    const getMatchInfo = async () => {
+        setSplash(true);
+        try {
+            const userToken = await AsyncStorage.getItem('userToken'); // 로그인한 유저의 토큰 가져오기
+            const response = await fetch(`${API.MATCH}/result?roomId=${route.params.roomId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${userToken}`, // Bearer 토큰을 포함시킴
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.status}`);
+            }
+            const data = await response.json();
+
+            const userDataResponse = await fetch(`${API.USER}/mypage`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${userToken}`, // Bearer 토큰을 포함시킴
+                    'Content-Type': 'application/json',
+                },
+            });
+            const userData = await userDataResponse.json();
+            setUserId(userData.usersDTO.userId);
+            setNationality(userData.usersDTO.userId == data.user1DTO.userId ? data.user2DTO.nationality : data.user1DTO.nationality);
+            setLanguages(userData.usersDTO.userId == data.user1DTO.userId ? data.user2DTO.languages : data.user1DTO.languages);
+        } catch (error) {
+            console.error('Error get matching info :', error);
+        }
+        setSplash(false);
+    }
+
+    useEffect(() => {
+        getMatchInfo();
+    }, []);
 
     return (
         <View style={{ flex: 1, backgroundColor: '#EBEDF6' }}>
             <View style={{ flex: 1, justifyContent: 'center' }}>
                 <Text style={{ fontSize: 38, fontFamily: 'Pretendard-Bold', color: '#5678F0', textAlign: 'center' }}> Connected! </Text>
                 <Image style={{ marginTop: 35, alignSelf: 'center' }} source={require('../assets/images/circle_logo_image.png')} />
-                <InfoTableBox
+                {nationality != undefined && languages != undefined && <InfoTableBox
                     style={{ marginTop: 50 }}
                     title='상대방 정보'
                     tableInfos={[
                         {
                             title: '국적',
-                            info: '미국'
+                            info: `${nationality}`
                         },
                         {
                             title: '희망 학습 언어',
                             info: () => (
                                 <View style={{ flexDirection: 'row' }}>
-                                    <View style={miniLanguageBox.box}>
-                                        <Text style={miniLanguageBox.text}>한국어</Text>
-                                    </View>
+                                    {languages.map((language, index) => (
+                                        <View key={index} style={miniLanguageBox.box}>
+                                            <Text style={miniLanguageBox.text}>{language}</Text>
+                                        </View>
+                                    ))}
                                 </View>
                             ),
                             titleStyle: { fontSize: 11 }
                         }
                     ]}
-                />
+                />}
             </View>
             <View style={{ marginTop: 20, marginBottom: '20%' }}>
                 <DoneButton
@@ -222,6 +265,7 @@ const MatchingCompleteScreen = () => {
                     onPress={() => enterChatRoom()}
                 />
             </View>
+            {splash && <Splash />}
         </View>
     )
 }
@@ -266,8 +310,8 @@ export const MatchingScreen = ({ navigation }) => {
                         ),
                         headerShadowVisible: false
                     }}
-                    name='Done' component={MatchingCompleteScreen}
-                />
+                    name='Done'>
+                    {(props) => <MatchingCompleteScreen parentNav={navigation} {...props} />}</Stack.Screen>
             </Stack.Navigator>
         </NavigationContainer>
     )

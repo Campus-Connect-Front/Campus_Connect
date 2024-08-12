@@ -213,7 +213,7 @@ export const BoardScreen = ({ parentNav, navigation }) => {
     useEffect(() => {
         setTimeout(() => {
             boardListRef.current.fetchBoard();
-        }, 1000);
+        }, 1500);
     }, [isFocused]);
 
     useEffect(() => {
