@@ -15,7 +15,7 @@ import StompJs, { Client } from '@stomp/stompjs';
 import * as encoding from 'text-encoding';
 
 export const OneChatScreen = ({ route }) => {
-  const { chatName, roomId, userName } = route.params; 
+  const { chatName, roomId, userId } = route.params; 
   const navigation = useNavigation();
 
   console.log('Route Params:', route.params);
@@ -42,7 +42,7 @@ export const OneChatScreen = ({ route }) => {
   // sockJS 클라이언트 생성 및 websocket 연결
   useEffect(() => {
     console.log('방아이디:',roomId);
-    console.log('유저네임:',userName);
+    console.log('유저아이디:',userId);
     
     // 프로필 이미지를 AsyncStorage에서 불러오는 함수
     const loadProfileImages = async () => {
@@ -60,7 +60,7 @@ export const OneChatScreen = ({ route }) => {
     const stomp = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {
-        userName: userName, 
+        userId: userId, 
         roomId: roomId, 
       },
       debug: (str) => {
@@ -99,7 +99,7 @@ export const OneChatScreen = ({ route }) => {
         destination: '/pub/chat/enter',
         body: JSON.stringify({
           roomId: roomId,
-          userName: userName, 
+          userId: userId, 
           messageType: 'ENTER'
         }),
       });
@@ -124,7 +124,7 @@ export const OneChatScreen = ({ route }) => {
         }
       }
     };
-  }, [roomId, userName, otherProfileImage]); 
+  }, [roomId, userId, otherProfileImage]); 
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -184,7 +184,7 @@ export const OneChatScreen = ({ route }) => {
     if (stompClient && stompClient.connected) {
       const newMessage = {
         roomId: roomId,
-        userName: userName, 
+        userId: userId, 
         messageContent: inputMessage,
         messageType: 'TALK',
         timestamp: new Date().toISOString(),
@@ -226,7 +226,7 @@ export const OneChatScreen = ({ route }) => {
       destination: '/pub/chat/exit',
       body: JSON.stringify({
         roomId: roomId,
-        userName: userName, // userId를 userName으로 변경
+        userId: userId, 
         messageType: 'LEAVE'
       }),
     });

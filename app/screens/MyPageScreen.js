@@ -37,12 +37,7 @@ export default function MyPageScreen({ navigation }) {
   useEffect(() => {
     const loadProfile = async () => {
       try {
-<<<<<<< HEAD
         const userToken = await AsyncStorage.getItem('userToken'); // 로그인한 유저의 토큰 가져오기
-
-=======
-        const userToken = await AsyncStorage.getItem('userToken');
->>>>>>> 89d63edeef3329bf8836df87d2f740b36b6afe51
         const response = await fetch(`${API.USER}/mypage`, {
           method: 'GET',
           headers: {

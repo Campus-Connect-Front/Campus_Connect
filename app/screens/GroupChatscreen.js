@@ -15,6 +15,7 @@ const initialParticipants = [];
 
 export const GroupChatScreen = ({ route = {}, navigation }) => {
   const { params = {} } = route;
+  console.log('Route Params:', route.params);
   const chatName = params.chatName || '채팅방';
   const userName = params.userName || '수정이';
   const { roomId, userId } = route.params;
@@ -25,6 +26,7 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
   const [participants, setParticipants] = useState([...initialParticipants, { id: 'ME', name: userName, profileImage: require('../assets/circle_logo.png') }]);
   const [hasEntered, setHasEntered] = useState(false); // 입장 메시지가 한 번만 보내지도록 관리
   const flatListRef = useRef(null);
+  //import AsyncStorage from '@react-native-async-storage/async-storage';
 
   // WebSocket 관련 설정
   const [stompClient, setStompClient] = useState(null);
