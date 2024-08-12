@@ -47,7 +47,7 @@ export default function MyPageScreen({ navigation }) {
         });
 
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          throw new Error(`Network response was not ok: ${response.statusText}`);
         }
 
         const data = await response.json();
@@ -65,7 +65,8 @@ export default function MyPageScreen({ navigation }) {
         }));
         loadProfileImage(data.usersDTO.imgUrl);
       } catch (error) {
-        console.error('Failed to load profile:', error);
+        console.error('Failed to load profile:', error.message);
+        Alert.alert('오류', `프로필 정보를 로드하는 중 오류가 발생했습니다: ${error.message}`);
       }
     };
 
@@ -77,7 +78,12 @@ export default function MyPageScreen({ navigation }) {
   }, [navigation]);
 
   const loadProfileImage = async (imgUrl) => {
-    if (!imgUrl) console.log("파일이 없습니다");
+    if (!imgUrl) {
+      console.log("파일이 없습니다");
+      setProfileImage(defaultImageUri); 
+      return;
+    }
+
     try {
       const userToken = await AsyncStorage.getItem('userToken');
       const response = await fetch(`${API.USER}/images/${imgUrl}`, {
@@ -88,12 +94,15 @@ export default function MyPageScreen({ navigation }) {
       });
 
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error(`Failed to load image: ${response.statusText}`);
       }
+
       const imageUri = response.url;
       setProfileImage(imageUri);
     } catch (error) {
-      console.error('Failed to load profile image:', error);
+      console.error('Failed to load profile image:', error.message);
+      setProfileImage(defaultImageUri); 
+      Alert.alert('오류', `프로필 이미지를 로드하는 중 오류가 발생했습니다: ${error.message}`);
     }
   };
 
@@ -122,12 +131,11 @@ export default function MyPageScreen({ navigation }) {
 
   const uploadImage = async (imageUri) => {
     const userToken = await AsyncStorage.getItem('userToken');
-
     const formData = new FormData();
     formData.append('file', {
       uri: imageUri,
-      type: 'image', 
-      name: 'profile',
+      type: 'image/jpeg', 
+      name: 'profile.jpg',
     });
 
     try {
@@ -138,21 +146,23 @@ export default function MyPageScreen({ navigation }) {
         },
         body: formData,
       });
+
       if (response.ok) {
-        console.log('이미지가 성공적으로 업로드되었습니다:');
+        console.log('이미지가 성공적으로 업로드되었습니다.');
         await loadProfileImage(imageUri);
       } else {
-        console.error('이미지 업로드 실패:');
-        Alert.alert('오류', '이미지 업로드 중 오류가 발생했습니다.');
+        const errorData = await response.text();
+        console.error('이미지 업로드 실패:', response.status, response.statusText, errorData);
+        Alert.alert('오류', `이미지 업로드 중 오류가 발생했습니다: ${response.statusText}`);
       }
     } catch (error) {
-      console.error('이미지 업로드 중 오류 발생:', error);
-      Alert.alert('오류', '이미지 업로드 중 문제가 발생했습니다.');
+      console.error('이미지 업로드 중 오류 발생:', error.message);
+      Alert.alert('오류', `이미지 업로드 중 문제가 발생했습니다: ${error.message}`);
     }
   };
 
   const handleImageChange = () => {
-    if (profileImage === null) {
+    if (profileImage === null || profileImage === defaultImageUri) {
       Alert.alert(
         "프로필 사진 설정",
         "앨범에서 프로필 이미지로 등록할 사진을 선택하세요.",
@@ -175,11 +185,7 @@ export default function MyPageScreen({ navigation }) {
           {
             text: "기본 이미지 적용",
             onPress: async () => {
-              // AsyncStorage에서 기존 프로필 이미지 제거
               await AsyncStorage.removeItem('profileImage');
-              // 기본 이미지의 URI로 서버에 업로드 요청
-              await uploadImage(defaultImageUri);
-              // 로컬 상태를 기본 이미지로 변경
               setProfileImage(defaultImageUri);
             },
           },
@@ -227,8 +233,8 @@ export default function MyPageScreen({ navigation }) {
                 Alert.alert('오류', errorData.message || '로그아웃 중 오류가 발생했습니다.');
               }
             } catch (error) {
-              console.error('로그아웃 중 오류 발생:', error);
-              Alert.alert('오류', '로그아웃 중 문제가 발생했습니다.');
+              console.error('로그아웃 중 오류 발생:', error.message);
+              Alert.alert('오류', `로그아웃 중 문제가 발생했습니다: ${error.message}`);
             }
           }
         }
@@ -325,6 +331,7 @@ const styles = StyleSheet.create({
   profileContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginRight: 120,
   },
   profileImageContainer: {
     position: 'relative',
@@ -362,6 +369,9 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginVertical: 8,
+    flexWrap: 'wrap',
+    flexShrink: 1, 
+    marginBottom: 20,
   },
   infoText: {
     fontSize: 16,
@@ -370,7 +380,7 @@ const styles = StyleSheet.create({
   editProfile: {
     color: '#7F7F7F',
     textDecorationLine: 'underline',
-    textAlign: 'center',
+    textAlign: 'right',
     marginTop: -10,
     marginBottom: 5,
   },

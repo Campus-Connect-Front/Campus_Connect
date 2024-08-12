@@ -49,6 +49,16 @@ export default function EditProfileScreen({ navigation }) {
   const isSaveButtonDisabled = !profile.oldPassword;
 
   const handleSave = async () => {
+    if (profile.newPassword.length !== 0 && profile.nickname.length > 12) {
+      Alert.alert('닉네임 글자수 오류', '닉네임은 12자 이내로 작성해 주세요.');
+      return;
+    }
+
+    if (profile.newPassword.length !== 0 && (profile.department.length < 2 || profile.department.length > 30)) {
+      Alert.alert('학과 글자수 오류', '학과는 2글자 이상, 30자 이하로 작성해 주세요.');
+      return;
+    }
+
     if (profile.newPassword.length !== 0 && profile.newPassword.length < 10) {
       Alert.alert('비밀번호 오류', '비밀번호는 최소 10자리 이상이어야 합니다.');
       return;
@@ -151,8 +161,9 @@ export default function EditProfileScreen({ navigation }) {
             <Text style={styles.label}>닉네임</Text>
             <TextInput
               style={styles.input}
-              placeholder="닉네임"
+              placeholder="닉네임(12자 이내)"
               value={profile.nickname}
+              maxLength={12}
               onChangeText={(text) => setProfile({ ...profile, nickname: text })}
             />
           </View>
@@ -163,6 +174,7 @@ export default function EditProfileScreen({ navigation }) {
               style={styles.input}
               placeholder="학과"
               value={profile.department}
+              maxLength={30}
               onChangeText={(text) => setProfile({ ...profile, department: text })}
             />
           </View>
