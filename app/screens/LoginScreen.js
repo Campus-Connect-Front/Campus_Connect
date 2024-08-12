@@ -32,12 +32,12 @@ export default function LoginScreen({ navigation }) {
       // 서버 응답을 텍스트로 읽기
       const textResponse = await response.text();
 
-      // 실패 메시지 확인을 위한 HTML 패턴 (예시로 설정한 부분, 실제 HTML 내용에 맞게 조정 필요)
+      // 실패
       if (textResponse.includes("Invalid credentials") || textResponse.includes("Please sign in")) {
         setError('아이디(학번) 또는 비밀번호가 올바르지 않습니다.');
         Alert.alert("로그인 실패", '아이디(학번) 또는 비밀번호가 올바르지 않습니다.');
       } else {
-        // 로그인 성공으로 가정 (정확한 성공 응답 내용에 따라 조정 필요)
+        // 로그인 성공
         console.log('Login successful');
         navigation.navigate('Main');
       }

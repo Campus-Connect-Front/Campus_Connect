@@ -14,6 +14,7 @@ import { BoardMatchingScreen } from './boardMatchingScr';
 import { BoardEditScreen } from './boardEditScr';
 import { API } from '../../config';
 import { Splash } from './loadingScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createStackNavigator();
 
@@ -43,9 +44,8 @@ const DayBox = ({ Day }) => {
 const BoardDetail = ({ parentNav, item, route, navigation }) => {
     const [splash, setSplash] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
-    const isAuthor = true;
+    const [isAuthor, setIsAuthor] = useState(true);
     const { postId, chatRoomId } = item;
-    const days = ["월", "화"]
     const [postData, setPostData] = useState({});
     const [recruitNum, setRecruitNum] = useState(0);
     const [attendNum, setAttendNum] = useState(0);
@@ -55,24 +55,31 @@ const BoardDetail = ({ parentNav, item, route, navigation }) => {
     const fetchPost = async () => {
         try {
             const response = await fetch(`${API.POST}/MyPost/${postId}`);
-
             if (!response.ok) {
                 throw new Error(`Network response was not ok: ${response.status}`);
             }
-
             const data = await response.json();
             setPostData(data);
             setRecruitNum(data.chatRoomId.peopleNum);
             setWeeklyInfos(data.weeklyInfos);
 
-            const response2 = await fetch(`${API.CHAT}/room/${chatRoomId.roomId}/member`);
-
-            if (!response2.ok) {
-                throw new Error(`Network response was not ok: ${response2.status}`);
+            const chatRoomResponse = await fetch(`${API.CHAT}/room/${chatRoomId.roomId}/member`);
+            if (!chatRoomResponse.ok) {
+                throw new Error(`Network response was not ok: ${chatRoomResponse.status}`);
             }
+            const chatData = await chatRoomResponse.json();
+            setAttendNum(chatData.length);
 
-            const data2 = await response2.json();
-            setAttendNum(data2.length);
+            const userToken = await AsyncStorage.getItem('userToken'); // 로그인한 유저의 토큰 가져오기
+            const userResponse = await fetch(`${API.USER}/mypage`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${userToken}`, // Bearer 토큰을 포함시킴
+                    'Content-Type': 'application/json',
+                },
+            });
+            const userData = await userResponse.json();
+            setIsAuthor(userData.usersDTO.userId == data.userId.userId);
 
         } catch (error) {
             console.error('Error fetching board detail :', error);
@@ -91,7 +98,7 @@ const BoardDetail = ({ parentNav, item, route, navigation }) => {
             }
 
         } catch (error) {
-            console.error('Error fetching board detail :', error);
+            console.error('Error delete post :', error);
         }
     };
 

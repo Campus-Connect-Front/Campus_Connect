@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Image, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { API } from '../../config';
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).replace(/\./g, '.');
+};
 
 const MyInfoScreen = ({ navigation }) => {
   const [profile, setProfile] = useState({
@@ -13,26 +25,32 @@ const MyInfoScreen = ({ navigation }) => {
 
   const [showModal, setShowModal] = useState(false);
 
+  // 프로필 정보 로드
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const profileData = await AsyncStorage.getItem('profile');
-        if (profileData) {
-          setProfile(JSON.parse(profileData));
-        } else {
-          // AsyncStorage에서 프로필 정보가 없을 경우 임시값 설정
-          setProfile({
-            nickname: '수정이',
-            studentId: '20XXXXXX',
-            department: '컴퓨터공학과',
-            birthdate: '20XX.XX.XX',
-            name: '김수정',
-          });
-        }
+        const userToken = await AsyncStorage.getItem('userToken');
+        const response = await axios.get(`${API.USER}/mypage`, {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+          },
+        });
+
+        // 서버에서 프로필 데이터 가져오기
+        const data = response.data;
+        setProfile(prevProfile => ({
+          ...prevProfile,
+          name: data.userAuthenticationDTO.studentName || prevProfile.name,
+          studentId: data.userAuthenticationDTO.studentId || prevProfile.studentId,
+          department: data.userAuthenticationDTO.major || prevProfile.department,
+          birthdate: formatDate(data.usersDTO.birthday) || prevProfile.birthdate,
+          nickname: data.usersDTO.nickName || prevProfile.nickname,
+        }));
       } catch (error) {
         Alert.alert('오류', '프로필 정보를 불러오는 데 실패했습니다.');
       }
     };
+
     loadProfile();
   }, []);
 
@@ -49,17 +67,22 @@ const MyInfoScreen = ({ navigation }) => {
     }
   };
 
+  // 값이 없거나 비어 있는 문자열인 경우
+  const renderProfileInfo = (value) => {
+    return value && value.trim() !== '' ? value : '로딩 중...';
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.infoContainer}>
         <Text style={styles.sectionTitle}>내 정보</Text>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>이름</Text>
-          <Text style={styles.infoValue}>{profile.name}</Text>
+          <Text style={styles.infoValue}>{renderProfileInfo(profile.name)}</Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>아이디(학번)</Text>
-          <Text style={styles.infoValue}>{profile.studentId}</Text>
+          <Text style={styles.infoValue}>{renderProfileInfo(profile.studentId)}</Text>
         </View>
         <View style={styles.separator} />
         <Text style={styles.sectionTitle}>정보 변경</Text>
@@ -71,19 +94,19 @@ const MyInfoScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>닉네임 변경</Text>
-            <Text style={styles.infoValueSmall}>{profile.nickname}</Text>
+            <Text style={styles.infoValueSmall}>{renderProfileInfo(profile.nickname)}</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>학과 변경</Text>
-            <Text style={styles.infoValueSmall}>{profile.department}</Text>
+            <Text style={styles.infoValueSmall}>{renderProfileInfo(profile.department)}</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>생년월일 변경</Text>
-            <Text style={styles.infoValueSmall}>{profile.birthdate}</Text>
+            <Text style={styles.infoValueSmall}>{renderProfileInfo(profile.birthdate)}</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -98,7 +121,9 @@ const MyInfoScreen = ({ navigation }) => {
               <Text>X</Text>
             </TouchableOpacity>
             <Text style={styles.modalTitle}>탈퇴하기</Text>
-            <Text style={styles.modalText}>정말로 탈퇴하시겠습니까?{'\n'}그동안 앱에 저장된 내역들은{'\n'}복구되지 않습니다.</Text>
+            <Text style={styles.modalText}>
+              정말로 탈퇴하시겠습니까?{'\n'}그동안 앱에 저장된 내역들은{'\n'}복구되지 않습니다.
+            </Text>
             <TouchableOpacity onPress={confirmLogout} style={styles.modalButton}>
               <Text style={styles.modalButtonText}>탈퇴하기</Text>
             </TouchableOpacity>
