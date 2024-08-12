@@ -36,7 +36,7 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
   });
 
   useEffect(() => {
-    const socket = new SockJS("http://10.50.103.109:8090/stomp/chat");
+    const socket = new SockJS("http://192.168.45.57:8090/stomp/chat");
     const stomp = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {

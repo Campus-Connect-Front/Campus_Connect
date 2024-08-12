@@ -38,6 +38,9 @@ export default function LoginScreen({ navigation }) {
         Alert.alert("로그인 실패", '아이디(학번) 또는 비밀번호가 올바르지 않습니다.');
       } else {
         // 로그인 성공
+        // 로그인 성공 시 studentId를 AsyncStorage에 저장
+        await AsyncStorage.setItem('userName', studentId);
+        console.log('아이디: ',studentId);
         console.log('Login successful');
         navigation.navigate('Main');
       }

@@ -9,8 +9,17 @@ export const ChatListScreen = () => {
     const navigation = useNavigation();
     const [oneToOneChats, setOneToOneChats] = useState([]);
     const [groupChats, setGroupChats] = useState([]);
+    const [studentId, setStudentId] = useState(null);
 
     useEffect(() => {
+
+        const fetchStudentId = async () => {
+            const storedStudentId = await AsyncStorage.getItem('userName'); 
+            setStudentId(storedStudentId);
+        };
+
+        fetchStudentId();
+
         const fetchChats = async () => {
             try {
                 const response = await fetch(
@@ -42,7 +51,7 @@ export const ChatListScreen = () => {
         <TouchableOpacity 
         onPress={() => {
             if (selectedChatType === 'oneToOne') {
-                navigation.navigate('OneChat', { userName: item.user, chatId: item.roomId, chatName: item.roomName, roomId: item.roomId });
+                navigation.navigate('OneChat', { userName: studentId, chatId: item.roomId, chatName: item.roomName, roomId: item.roomId });
             } else {
                 navigation.navigate('GroupChat', { chatId: item.roomId, chatName: item.roomName, roomId: item.roomId });
             }
