@@ -34,114 +34,103 @@ export const OneChatScreen = ({ route }) => {
   });
 
   // sockJS 클라이언트 생성 및 websocket 연결
-  useEffect(()=>{ 
-    try {
-      const socket = new SockJS("http://172.30.1.69:8090/stomp/chat"); // WebSocket URL
-      const stomp = new Client({
-        webSocketFactory: () => socket,
-        connectHeaders: {
-         userId: 'userId',
-         roomId: 'roomId',
-        },
-        debug: (str) => {
-          console.log(str)
-        },
-        reconnectDelay: 5000, //자동 재 연결
-        heartbeatIncoming: 4000,
-        heartbeatOutgoing: 4000,
-      });
-
-      stomp.onConnect = () => {
-        console.log('Connected');
-        setConnected(true); // 연결 완료 상태로 업데이트
-        // 저장된 채팅 불러오기
-        fetch(`${API.CHAT}/room/10`)
+  useEffect(() => {
+    const socket = new SockJS("http://192.168.45.75:8090/stomp/chat");
+    const stomp = new Client({
+      webSocketFactory: () => socket,
+      connectHeaders: {
+        userId: userId, // 실제 userId를 사용
+        roomId: roomId, // 실제 roomId를 사용
+      },
+      debug: (str) => {
+        console.log(str);
+      },
+      reconnectDelay: 5000, // 자동 재 연결
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
+  
+    stomp.onConnect = () => {
+      console.log('Connected');
+      setConnected(true); // 연결 완료 상태로 업데이트
+      // 저장된 채팅 불러오기
+      fetch(`${API.CHAT}/room/${roomId}`)
         .then(response => {
           console.log('Content-Type:', response.headers.get('Content-Type'));
-         if (!response.ok) {
-           throw new Error(`HTTP error! Status: ${response.status}`);
-         }
-         return response.text(); // 응답을 텍스트로 읽기
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json(); // 응답을 JSON으로 읽기
         })
-        .then(text => {
-         console.log('Fetched response text:', text); // 응답 본문 로그
-         try {
-            const data = JSON.parse(text); // JSON으로 파싱 시도
-            console.log('Parsed data:', data);
-           setMessages(data);
-          } catch (error) {
-            console.error('Error parsing JSON:', error);
-            Alert.alert('Error', 'JSON 파싱 중 오류가 발생했습니다.');
-         }
+        .then(data => {
+          console.log('Fetched data:', data);
+          setMessages(data);
         })
         .catch(error => {
           console.error('Error fetching messages: ', error);
           Alert.alert('Error', '메시지 로딩 중 오류가 발생했습니다.');
         });
-
-
-        // 구독
-        stomp.subscribe(`/sub/chat/room/10`, (message) => {
-          try {
-            const receivedMessage = JSON.parse(message.body);
-            // 화면에 뿌릴 내용
-            const formattedMessage = {
-              id: receivedMessage.id,
-              messageContent: receivedMessage.messageContent,
-              timestamp: new Date(receivedMessage.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-              isMine: receivedMessage.senderId === userId, // 메시지의 발신자가 현재 사용자 ID와 일치하는지 확인
-            };
-            setMessages((prevMessages) => [...prevMessages, receivedMessage]);
-          } catch (error) {
-            console.error('Message processing error: ', error);
-            Alert.alert('Error', 'An error occurred while processing the message.');
-          }
-        });
   
-        // 유저 입장 메시지 발송
-        stomp.publish({
-          destination: '/pub/chat/enter',
-          body: JSON.stringify({
-            roomId: 10,
-            userId: 3,
-            messageType: 'ENTER'
-          }),
-        });
-      };
-
-      stomp.onStompError = (frame) => {
-        console.error('Broker reported error: ' + frame.headers['message']);
-        console.error('Additional details: ' + frame.body);
-        Alert.alert('Error', 'A connection error occurred.');
-      };
-
-      setStompClient(stomp);
-      stomp.activate();
-
-      return () => {
-        // 컴포넌트 언마운트 시 연결 해제 및 유저 퇴장 메시지 발송
-        if (stomp) {
-          try {
-            stomp.publish({
-              destination: '/pub/chat/exit',
-              body: JSON.stringify({
-                roomId: 10,
-                userId: 3,
-                messageType: 'LEAVE'
-              }),
-            });
-            stomp.deactivate();
-          } catch (error) {
-            console.error('Error during disconnection: ', error);
-            Alert.alert('Error', 'An error occurred during disconnection.');
-          }
+      // 구독
+      stomp.subscribe(`/sub/chat/room/${roomId}`, (message) => {
+        try {
+          const receivedMessage = JSON.parse(message.body);
+          const formattedMessage = {
+            id: receivedMessage.id,
+            messageContent: receivedMessage.messageContent,
+            timestamp: new Date(receivedMessage.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+            isMine: receivedMessage.senderId === userId, // 메시지의 발신자가 현재 사용자 ID와 일치하는지 확인
+            system: receivedMessage.messageType === 'ENTER' || receivedMessage.messageType === 'LEAVE',
+          };
+          setMessages((prevMessages) => [...prevMessages, formattedMessage]);
+        } catch (error) {
+          console.error('Message processing error: ', error);
+          Alert.alert('Error', 'An error occurred while processing the message.');
         }
-      };
-    } catch (error) {
-      console.error('WebSocket connection error: ', error);
-      Alert.alert('Error', 'An error occurred during WebSocket connection.');
-    }
+      });
+      
+  
+      // 유저 입장 메시지 발송
+      stomp.publish({
+        destination: '/pub/chat/enter',
+        body: JSON.stringify({
+          roomId: roomId,
+          userId: userId,
+          messageType: 'ENTER'
+        }),
+      });
+    };
+  
+    stomp.onStompError = (frame) => {
+      console.error('Broker reported error: ' + frame.headers['message']);
+      console.error('Additional details: ' + frame.body);
+      Alert.alert('Error', 'A connection error occurred.');
+    };
+  
+    setStompClient(stomp);
+    stomp.activate();
+  
+    return () => {
+      if (stomp) {
+        try {
+          stomp.publish({
+            destination: '/pub/chat/exit',
+            body: JSON.stringify({
+              roomId: roomId,
+              userId: userId,
+              messageType: 'LEAVE'
+            }),
+          });
+          stomp.deactivate();
+        } catch (error) {
+          console.error('Error during disconnection: ', error);
+          Alert.alert('Error', 'An error occurred during disconnection.');
+        }
+      }
+    };
   }, [roomId, userId]);
+
+  
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -167,33 +156,58 @@ export const OneChatScreen = ({ route }) => {
     });
   }, [navigation, chatName]);
 
-  const renderItem = ({ item, index }) => (
-    <View style={[styles.messageContainer, index === 0 ? styles.firstMessageContainer : null, item.isMine ? styles.myMessageContainer : styles.otherMessageContainer]}>
-      {!item.isMine && <Image source={require('../assets/circle_logo.png')} style={styles.profileImage} />}
-      <View>
-        <View style={[styles.bubbleContainer, item.isMine ? styles.myBubbleContainer : styles.otherBubbleContainer]}>
-          <View style={[styles.bubble, item.isMine ? styles.myBubble : styles.otherBubble]}>
-            <Text style={item.isMine ? styles.myMessageText : styles.otherMessageText}>{item.messageContent}</Text>
+  const renderItem = ({ item, index }) => {
+    if (item.messageType === 'ENTER' || item.messageType === 'LEAVE') {
+      return (
+        <View style={styles.systemMessageContainer}>
+          <Text style={styles.systemMessageText}>{item.messageContent}</Text>
+        </View>
+      );
+    }
+  
+    return (
+      <View style={[styles.messageContainer, item.isMine ? styles.myMessageContainer : styles.otherMessageContainer]}>
+        {!item.isMine && (
+          <>
+            <Image source={require('../assets/circle_logo.png')} style={styles.profileImage} />
+            <Text style={styles.senderName}>{item.senderName}</Text>
+          </>
+        )}
+        <View>
+          <View style={[styles.bubbleContainer, item.isMine ? styles.myBubbleContainer : styles.otherBubbleContainer]}>
+            <View style={[styles.bubble, item.isMine ? styles.myBubble : styles.otherBubble]}>
+              <Text style={item.isMine ? styles.myMessageText : styles.otherMessageText}>{item.messageContent}</Text>
+            </View>
           </View>
           <Text style={item.isMine ? styles.myMessageTime : styles.otherMessageTime}>{item.timestamp}</Text>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
+  
+  
 
   const handleSend = () => {
     if (stompClient && stompClient.connected) {
       const newMessage = {
-        roomId: 10,
-        userId: 3,
+        roomId: roomId,
+        userId: userId,
         messageContent: inputMessage,
-        messageType: 'TALK'
+        messageType: 'TALK',
+        timestamp: new Date().toISOString(),
+
       };
       try {
-        stompClient.publish({
-          destination: '/pub/chat/message',
-          body: JSON.stringify(newMessage)
-        });
+        setMessages(prevMessages => [
+          ...prevMessages,
+          {
+            id: `${Date.now()}`,
+            messageContent: inputMessage,
+            timestamp: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+            isMine: true, 
+          }
+        ]);      
+
         setInputMessage('');
       } catch (error) {
         console.error('Message sending error: ', error);
@@ -211,7 +225,7 @@ export const OneChatScreen = ({ route }) => {
     setIsExitModalVisible(false);
     // 탈퇴로직
     const token = await AsyncStorage.getItem('token');
-    const roomId = 1; // 입장해있는 채팅방 roomId 가져오기
+    const roomId = roomId; // 입장해있는 채팅방 roomId 가져오기
      
     fetch(`${API.CHAT}/room/${roomId}`,{
       method: 'DELETE',
@@ -243,6 +257,7 @@ export const OneChatScreen = ({ route }) => {
           renderItem={renderItem}
           keyExtractor={item => item.id}
           style={styles.chatList}
+          contentContainerStyle={{ paddingTop: 20 }}
           onContentSizeChange={() => flatListRef.current.scrollToEnd({ animated: true })}
         />
         {isEmojiPickerVisible && (
@@ -305,22 +320,21 @@ const styles = StyleSheet.create({
   messageContainer: {
     flexDirection: 'row',
     marginVertical: 5,
-    alignItems: 'flex-end',
-  },
-  firstMessageContainer: {
-    marginTop: 20, 
+    alignItems: 'center',
   },
   myMessageContainer: {
     justifyContent: 'flex-end',
+    alignSelf: 'flex-end', // 오른쪽 정렬
     paddingRight: 10,
   },
   otherMessageContainer: {
     justifyContent: 'flex-start',
+    alignSelf: 'flex-start', // 왼쪽 정렬
     paddingLeft: 10,
   },
   bubbleContainer: {
     flexDirection: 'column',
-    alignItems: 'flex-end',
+    alignItems: 'center',
   },
   bubble: {
     maxWidth: '100%',
@@ -384,5 +398,13 @@ const styles = StyleSheet.create({
     fontSize: 10,
     alignSelf: 'flex-end',
     marginTop: 2,
+  },
+  systemMessageContainer: {
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  systemMessageText: {
+    color: '#888',
+    fontSize: 12,
   },
 });
