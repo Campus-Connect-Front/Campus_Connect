@@ -9,7 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API } from '../../config'
 // WebSocket 설정
 import SockJS from 'sockjs-client';
-import StompJs, {Client} from '@stomp/stompjs';
+import StompJs, { Client } from '@stomp/stompjs';
 import * as encoding from 'text-encoding';
 
 export const OneChatScreen = ({ route }) => {
@@ -23,6 +23,8 @@ export const OneChatScreen = ({ route }) => {
   const [isExitModalVisible, setIsExitModalVisible] = useState(false);
   const flatListRef = useRef(null);
 
+  // 프로필 이미지 상태를 관리하기 위한 상태 변수 추가
+  const [otherProfileImage, setOtherProfileImage] = useState(null); // 상대방 프로필 이미지
   
   // WebSocket 관련 설정
   const [stompClient, setStompClient] = useState(null);
@@ -35,12 +37,24 @@ export const OneChatScreen = ({ route }) => {
 
   // sockJS 클라이언트 생성 및 websocket 연결
   useEffect(() => {
-    const socket = new SockJS("http://192.168.45.75:8090/stomp/chat");
+    // 프로필 이미지를 AsyncStorage에서 불러오는 함수
+    const loadProfileImages = async () => {
+      try {
+        const otherImage = await AsyncStorage.getItem(`profileImage-${roomId}`); // 상대방의 프로필 이미지 가져오기 (채팅방 ID 기준으로 구분)
+        setOtherProfileImage(otherImage);
+      } catch (error) {
+        console.error('Failed to load profile images:', error);
+      }
+    };
+
+    loadProfileImages(); // 컴포넌트가 마운트될 때 프로필 이미지 로드
+
+    const socket = new SockJS("http://192.168.0.3:8090/stomp/chat");
     const stomp = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {
-        userId: userId, // 실제 userId를 사용
-        roomId: roomId, // 실제 roomId를 사용
+        userId: userId, 
+        roomId: roomId, 
       },
       debug: (str) => {
         console.log(str);
@@ -53,6 +67,7 @@ export const OneChatScreen = ({ route }) => {
     stomp.onConnect = () => {
       console.log('Connected');
       setConnected(true); // 연결 완료 상태로 업데이트
+      
       // 저장된 채팅 불러오기
       fetch(`${API.CHAT}/room/${roomId}`)
         .then(response => {
@@ -64,33 +79,15 @@ export const OneChatScreen = ({ route }) => {
         })
         .then(data => {
           console.log('Fetched data:', data);
-          setMessages(data);
+          // 기존 메시지를 지우지 않고 추가
+          setMessages((prevMessages) => [...data, ...prevMessages]);
         })
         .catch(error => {
           console.error('Error fetching messages: ', error);
           Alert.alert('Error', '메시지 로딩 중 오류가 발생했습니다.');
         });
   
-      // 구독
-      stomp.subscribe(`/sub/chat/room/${roomId}`, (message) => {
-        try {
-          const receivedMessage = JSON.parse(message.body);
-          const formattedMessage = {
-            id: receivedMessage.id,
-            messageContent: receivedMessage.messageContent,
-            timestamp: new Date(receivedMessage.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-            isMine: receivedMessage.senderId === userId, // 메시지의 발신자가 현재 사용자 ID와 일치하는지 확인
-            system: receivedMessage.messageType === 'ENTER' || receivedMessage.messageType === 'LEAVE',
-          };
-          setMessages((prevMessages) => [...prevMessages, formattedMessage]);
-        } catch (error) {
-          console.error('Message processing error: ', error);
-          Alert.alert('Error', 'An error occurred while processing the message.');
-        }
-      });
-      
-  
-      // 유저 입장 메시지 발송
+      // 유저 최초 입장 메시지 발송 (최초에만 보내기 위해 useEffect에서 설정)
       stomp.publish({
         destination: '/pub/chat/enter',
         body: JSON.stringify({
@@ -113,14 +110,6 @@ export const OneChatScreen = ({ route }) => {
     return () => {
       if (stomp) {
         try {
-          stomp.publish({
-            destination: '/pub/chat/exit',
-            body: JSON.stringify({
-              roomId: roomId,
-              userId: userId,
-              messageType: 'LEAVE'
-            }),
-          });
           stomp.deactivate();
         } catch (error) {
           console.error('Error during disconnection: ', error);
@@ -128,9 +117,7 @@ export const OneChatScreen = ({ route }) => {
         }
       }
     };
-  }, [roomId, userId]);
-
-  
+  }, [roomId, userId, otherProfileImage]); // 상대방의 프로필 이미지 상태를 의존성에 추가
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -169,7 +156,8 @@ export const OneChatScreen = ({ route }) => {
       <View style={[styles.messageContainer, item.isMine ? styles.myMessageContainer : styles.otherMessageContainer]}>
         {!item.isMine && (
           <>
-            <Image source={require('../assets/circle_logo.png')} style={styles.profileImage} />
+            {/* 상대방의 프로필 이미지를 표시 */}
+            <Image source={item.profileImage ? { uri: item.profileImage } : require('../assets/circle_logo.png')} style={styles.profileImage} />
             <Text style={styles.senderName}>{item.senderName}</Text>
           </>
         )}
@@ -184,8 +172,6 @@ export const OneChatScreen = ({ route }) => {
       </View>
     );
   };
-  
-  
 
   const handleSend = () => {
     if (stompClient && stompClient.connected) {
@@ -195,7 +181,6 @@ export const OneChatScreen = ({ route }) => {
         messageContent: inputMessage,
         messageType: 'TALK',
         timestamp: new Date().toISOString(),
-
       };
       try {
         setMessages(prevMessages => [
@@ -206,9 +191,15 @@ export const OneChatScreen = ({ route }) => {
             timestamp: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
             isMine: true, 
           }
-        ]);      
+        ]);
 
-        setInputMessage('');
+        // WebSocket으로 메시지 전송
+        stompClient.publish({
+          destination: '/pub/chat/message',
+          body: JSON.stringify(newMessage),
+        });
+
+        setInputMessage(''); // 입력란 초기화
       } catch (error) {
         console.error('Message sending error: ', error);
         Alert.alert('Error', 'An error occurred while sending the message.');
@@ -223,29 +214,38 @@ export const OneChatScreen = ({ route }) => {
 
   const handleExit = async () => {
     setIsExitModalVisible(false);
-    // 탈퇴로직
+    // 퇴장 메시지 발송
+    stompClient.publish({
+      destination: '/pub/chat/exit',
+      body: JSON.stringify({
+        roomId: roomId,
+        userId: userId,
+        messageType: 'LEAVE'
+      }),
+    });
+    // 탈퇴 로직
     const token = await AsyncStorage.getItem('token');
-    const roomId = roomId; // 입장해있는 채팅방 roomId 가져오기
      
-    fetch(`${API.CHAT}/room/${roomId}`,{
+    fetch(`${API.CHAT}/room/${roomId}`, {
       method: 'DELETE',
-      headers:{
-        'Content-type':'application/json',
+      headers: {
+        'Content-type': 'application/json',
         'Authorization': `Bearer ${token}`
       }
     })
     .then(response => {
-      if(response.ok){
+      if (response.ok) {
         console.log('탈퇴 성공');
-      }else{
+        navigation.goBack(); // 채팅방에서 나가기
+      } else {
         console.error('탈퇴 실패');
         Alert.alert('탈퇴에 실패했습니다');
       }
     })
-    .catch(error=>{
+    .catch(error => {
       console.error('탈퇴 실패', error);
-        Alert.alert('탈퇴에 실패했습니다');
-    })
+      Alert.alert('탈퇴에 실패했습니다');
+    });
   };
 
   return (
