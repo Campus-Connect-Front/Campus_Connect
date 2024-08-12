@@ -38,10 +38,11 @@ export const ChatListScreen = () => {
     }, [selectedChatType]);
 
     const renderItem = ({ item }) => (
+
         <TouchableOpacity 
         onPress={() => {
             if (selectedChatType === 'oneToOne') {
-                navigation.navigate('OneChat', { chatId: item.roomId, chatName: item.roomName, roomId: item.roomId });
+                navigation.navigate('OneChat', { userName: item.user, chatId: item.roomId, chatName: item.roomName, roomId: item.roomId });
             } else {
                 navigation.navigate('GroupChat', { chatId: item.roomId, chatName: item.roomName, roomId: item.roomId });
             }

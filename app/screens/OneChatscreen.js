@@ -1,3 +1,5 @@
+//username사용
+
 import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Alert } from 'react-native';
 import { Icon } from 'react-native-elements';
@@ -13,8 +15,10 @@ import StompJs, { Client } from '@stomp/stompjs';
 import * as encoding from 'text-encoding';
 
 export const OneChatScreen = ({ route }) => {
-  const { chatName, roomId, userId } = route.params;
+  const { chatName, roomId, userName } = route.params; 
   const navigation = useNavigation();
+
+  console.log('Route Params:', route.params);
 
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -37,6 +41,9 @@ export const OneChatScreen = ({ route }) => {
 
   // sockJS 클라이언트 생성 및 websocket 연결
   useEffect(() => {
+    console.log('방아이디:',roomId);
+    console.log('유저네임:',userName);
+    
     // 프로필 이미지를 AsyncStorage에서 불러오는 함수
     const loadProfileImages = async () => {
       try {
@@ -49,11 +56,11 @@ export const OneChatScreen = ({ route }) => {
 
     loadProfileImages(); // 컴포넌트가 마운트될 때 프로필 이미지 로드
 
-    const socket = new SockJS("http://192.168.45.30:8090/stomp/chat");
+    const socket = new SockJS("http://10.50.103.109:8090/stomp/chat");
     const stomp = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {
-        userId: userId, 
+        userName: userName, 
         roomId: roomId, 
       },
       debug: (str) => {
@@ -92,7 +99,7 @@ export const OneChatScreen = ({ route }) => {
         destination: '/pub/chat/enter',
         body: JSON.stringify({
           roomId: roomId,
-          userId: userId,
+          userName: userName, 
           messageType: 'ENTER'
         }),
       });
@@ -117,7 +124,7 @@ export const OneChatScreen = ({ route }) => {
         }
       }
     };
-  }, [roomId, userId, otherProfileImage]); // 상대방의 프로필 이미지 상태를 의존성에 추가
+  }, [roomId, userName, otherProfileImage]); 
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -177,7 +184,7 @@ export const OneChatScreen = ({ route }) => {
     if (stompClient && stompClient.connected) {
       const newMessage = {
         roomId: roomId,
-        userId: userId,
+        userName: userName, 
         messageContent: inputMessage,
         messageType: 'TALK',
         timestamp: new Date().toISOString(),
@@ -219,7 +226,7 @@ export const OneChatScreen = ({ route }) => {
       destination: '/pub/chat/exit',
       body: JSON.stringify({
         roomId: roomId,
-        userId: userId,
+        userName: userName, // userId를 userName으로 변경
         messageType: 'LEAVE'
       }),
     });
