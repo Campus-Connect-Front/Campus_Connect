@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Alert } from 'react-native';
 import { Icon } from 'react-native-elements';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import EmojiSelector, { Categories } from 'react-native-emoji-selector';
 import { ReportScr } from './reportScr';
 import { ExitModal } from './exitModal';
@@ -13,9 +13,9 @@ import StompJs, { Client } from '@stomp/stompjs';
 import * as encoding from 'text-encoding';
 
 export const OneChatScreen = ({ route }) => {
-  const { chatName, roomId, userId } = route.params;
+  const { chatName, roomId } = route.params;
   const navigation = useNavigation();
-
+  const [userId, setUserId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
@@ -35,7 +35,20 @@ export const OneChatScreen = ({ route }) => {
     TextDecoder: TextEncodingPolyfill.TextDecoder,
   });
 
-  // sockJS 클라이언트 생성 및 websocket 연결
+  // studentId 불러오기
+  useEffect(() => {
+    const loadUserId = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem('userId'); // AsyncStorage에서 userId 가져오기
+        setUserId(storedUserId); // userId 상태 업데이트
+      } catch (error) {
+        console.error('Failed to load userId from AsyncStorage:', error);
+      }
+    };
+
+    loadUserId();
+  }, []);
+
   useEffect(() => {
     // 프로필 이미지를 AsyncStorage에서 불러오는 함수
     const loadProfileImages = async () => {
@@ -46,14 +59,14 @@ export const OneChatScreen = ({ route }) => {
         console.error('Failed to load profile images:', error);
       }
     };
-
     loadProfileImages(); // 컴포넌트가 마운트될 때 프로필 이미지 로드
 
-    const socket = new SockJS("http://192.168.0.3:8090/stomp/chat");
+    // sockJS 클라이언트 생성 및 websocket 연결
+    const socket = new SockJS("http://172.30.1.55:8090/stomp/chat");
     const stomp = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {
-        userId: userId, 
+        userId:userId,
         roomId: roomId, 
       },
       debug: (str) => {
@@ -86,6 +99,24 @@ export const OneChatScreen = ({ route }) => {
           console.error('Error fetching messages: ', error);
           Alert.alert('Error', '메시지 로딩 중 오류가 발생했습니다.');
         });
+
+       // 구독
+       stomp.subscribe(`/sub/chat/room/${roomId}`, (message) => {
+        try {
+          const receivedMessage = JSON.parse(message.body);
+          // 화면에 뿌릴 내용
+          const formattedMessage = {
+            id: receivedMessage.id,
+            messageContent: receivedMessage.messageContent,
+            timestamp: new Date(receivedMessage.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+            isMine: receivedMessage.senderId === userId, // 메시지의 발신자가 현재 사용자 ID와 일치하는지 확인
+          };
+          setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+        } catch (error) {
+          console.error('Message processing error: ', error);
+          Alert.alert('Error', 'An error occurred while processing the message.');
+        }
+      });
   
       // 유저 최초 입장 메시지 발송 (최초에만 보내기 위해 useEffect에서 설정)
       stomp.publish({
@@ -175,9 +206,15 @@ export const OneChatScreen = ({ route }) => {
 
   const handleSend = () => {
     if (stompClient && stompClient.connected) {
+      if (!userId) {
+        console.error('User ID is not set.');
+        Alert.alert('Error', '사용자 ID가 설정되지 않았습니다.');
+        return;
+      }
+      else{console.log(userId);}
       const newMessage = {
         roomId: roomId,
-        userId: userId,
+        studentId: userId,
         messageContent: inputMessage,
         messageType: 'TALK',
         timestamp: new Date().toISOString(),
@@ -219,7 +256,7 @@ export const OneChatScreen = ({ route }) => {
       destination: '/pub/chat/exit',
       body: JSON.stringify({
         roomId: roomId,
-        userId: userId,
+        userId:userId,
         messageType: 'LEAVE'
       }),
     });
