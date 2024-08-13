@@ -3,29 +3,15 @@ import { useState, useEffect } from 'react';
 import { Text, View, Image, TouchableOpacity, FlatList, StyleSheet, ImageBackground } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { API } from '../../config';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const ChatListScreen = () => {
     const [selectedChatType, setSelectedChatType] = useState('oneToOne');
     const navigation = useNavigation();
     const [oneToOneChats, setOneToOneChats] = useState([]);
     const [groupChats, setGroupChats] = useState([]);
-<<<<<<< HEAD
-    const [studentId, setStudentId] = useState(null);
-=======
     const route = useRoute();
->>>>>>> e7f8ccb2c08004181ec316f72b8891b2c786477c
 
     useEffect(() => {
-
-        const fetchStudentId = async () => {
-            const storedStudentId = await AsyncStorage.getItem('userId'); 
-            //console.log('학생아이디는:', storedStudentId);
-            setStudentId(storedStudentId);
-        };
-
-        fetchStudentId();
-
         const fetchChats = async () => {
             try {
                 const response = await fetch(
@@ -53,13 +39,12 @@ export const ChatListScreen = () => {
     }, [selectedChatType]);
 
     const renderItem = ({ item }) => (
-
         <TouchableOpacity 
         onPress={() => {
             if (selectedChatType === 'oneToOne') {
-                navigation.navigate('OneChat', { userId: studentId, chatName: item.roomName, roomId: item.roomId });
+                navigation.navigate('OneChat', { chatId: item.roomId, chatName: item.roomName, roomId: item.roomId });
             } else {
-                navigation.navigate('GroupChat', { userId: studentId, chatName: item.roomName, roomId: item.roomId });
+                navigation.navigate('GroupChat', { chatId: item.roomId, chatName: item.roomName, roomId: item.roomId });
             }
         }}
             style={styles.chatItem}>

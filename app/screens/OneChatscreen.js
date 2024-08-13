@@ -1,5 +1,3 @@
-//username사용
-
 import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Alert } from 'react-native';
 import { Icon } from 'react-native-elements';
@@ -15,17 +13,9 @@ import StompJs, { Client } from '@stomp/stompjs';
 import * as encoding from 'text-encoding';
 
 export const OneChatScreen = ({ route }) => {
-<<<<<<< HEAD
-  const { chatName, roomId, userId } = route.params; 
-  const navigation = useNavigation();
-
-  console.log('Route Params:', route.params);
-
-=======
   const { chatName, roomId } = route.params;
   const navigation = useNavigation();
   const [userId, setUserId] = useState(null);
->>>>>>> e7f8ccb2c08004181ec316f72b8891b2c786477c
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
@@ -47,11 +37,6 @@ export const OneChatScreen = ({ route }) => {
 
   // studentId 불러오기
   useEffect(() => {
-<<<<<<< HEAD
-    console.log('방아이디:',roomId);
-    console.log('유저아이디:',userId);
-    
-=======
     const loadUserId = async () => {
       try {
         const storedUserId = await AsyncStorage.getItem('userId'); // AsyncStorage에서 userId 가져오기
@@ -65,7 +50,6 @@ export const OneChatScreen = ({ route }) => {
   }, []);
 
   useEffect(() => {
->>>>>>> e7f8ccb2c08004181ec316f72b8891b2c786477c
     // 프로필 이미지를 AsyncStorage에서 불러오는 함수
     const loadProfileImages = async () => {
       try {
@@ -75,16 +59,6 @@ export const OneChatScreen = ({ route }) => {
         console.error('Failed to load profile images:', error);
       }
     };
-<<<<<<< HEAD
-
-    loadProfileImages(); // 컴포넌트가 마운트될 때 프로필 이미지 로드
-
-    const socket = new SockJS("http://192.168.45.57:8090/stomp/chat");
-    const stomp = new Client({
-      webSocketFactory: () => socket,
-      connectHeaders: {
-        userId: userId, 
-=======
     loadProfileImages(); // 컴포넌트가 마운트될 때 프로필 이미지 로드
 
     // sockJS 클라이언트 생성 및 websocket 연결
@@ -93,7 +67,6 @@ export const OneChatScreen = ({ route }) => {
       webSocketFactory: () => socket,
       connectHeaders: {
         userId:userId,
->>>>>>> e7f8ccb2c08004181ec316f72b8891b2c786477c
         roomId: roomId, 
       },
       debug: (str) => {
@@ -126,8 +99,6 @@ export const OneChatScreen = ({ route }) => {
           console.error('Error fetching messages: ', error);
           Alert.alert('Error', '메시지 로딩 중 오류가 발생했습니다.');
         });
-<<<<<<< HEAD
-=======
 
        // 구독
        stomp.subscribe(`/sub/chat/room/${roomId}`, (message) => {
@@ -146,14 +117,13 @@ export const OneChatScreen = ({ route }) => {
           Alert.alert('Error', 'An error occurred while processing the message.');
         }
       });
->>>>>>> e7f8ccb2c08004181ec316f72b8891b2c786477c
   
       // 유저 최초 입장 메시지 발송 (최초에만 보내기 위해 useEffect에서 설정)
       stomp.publish({
         destination: '/pub/chat/enter',
         body: JSON.stringify({
           roomId: roomId,
-          userId: userId, 
+          userId: userId,
           messageType: 'ENTER'
         }),
       });
@@ -178,11 +148,7 @@ export const OneChatScreen = ({ route }) => {
         }
       }
     };
-<<<<<<< HEAD
-  }, [roomId, userId, otherProfileImage]); 
-=======
   }, [roomId, userId, otherProfileImage]); // 상대방의 프로필 이미지 상태를 의존성에 추가
->>>>>>> e7f8ccb2c08004181ec316f72b8891b2c786477c
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -248,11 +214,7 @@ export const OneChatScreen = ({ route }) => {
       else{console.log(userId);}
       const newMessage = {
         roomId: roomId,
-<<<<<<< HEAD
-        userId: userId, 
-=======
         studentId: userId,
->>>>>>> e7f8ccb2c08004181ec316f72b8891b2c786477c
         messageContent: inputMessage,
         messageType: 'TALK',
         timestamp: new Date().toISOString(),
@@ -294,11 +256,7 @@ export const OneChatScreen = ({ route }) => {
       destination: '/pub/chat/exit',
       body: JSON.stringify({
         roomId: roomId,
-<<<<<<< HEAD
-        userId: userId, 
-=======
         userId:userId,
->>>>>>> e7f8ccb2c08004181ec316f72b8891b2c786477c
         messageType: 'LEAVE'
       }),
     });
