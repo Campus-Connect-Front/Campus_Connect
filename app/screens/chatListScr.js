@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { Text, View, Image, TouchableOpacity, FlatList, StyleSheet, ImageBackground } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { API } from '../../config';
 
 export const ChatListScreen = () => {
@@ -9,6 +9,7 @@ export const ChatListScreen = () => {
     const navigation = useNavigation();
     const [oneToOneChats, setOneToOneChats] = useState([]);
     const [groupChats, setGroupChats] = useState([]);
+    const route = useRoute();
 
     useEffect(() => {
         const fetchChats = async () => {
