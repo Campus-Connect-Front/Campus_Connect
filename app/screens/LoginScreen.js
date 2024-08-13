@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, Image, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Text, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API } from '../../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -43,7 +44,9 @@ export default function LoginScreen({ navigation }) {
         await AsyncStorage.setItem('userId', studentId);
         console.log('아이디: ',studentId);
         console.log('Login successful');
+        console.log(studentId);
         navigation.navigate('Main');
+        await AsyncStorage.setItem('userId', studentId);
       }
     } catch (error) {
       console.error('네트워크 오류 발생:', error);

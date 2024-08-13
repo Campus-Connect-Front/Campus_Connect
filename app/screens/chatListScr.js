@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { Text, View, Image, TouchableOpacity, FlatList, StyleSheet, ImageBackground } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { API } from '../../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -10,7 +10,11 @@ export const ChatListScreen = () => {
     const navigation = useNavigation();
     const [oneToOneChats, setOneToOneChats] = useState([]);
     const [groupChats, setGroupChats] = useState([]);
+<<<<<<< HEAD
     const [studentId, setStudentId] = useState(null);
+=======
+    const route = useRoute();
+>>>>>>> e7f8ccb2c08004181ec316f72b8891b2c786477c
 
     useEffect(() => {
 
