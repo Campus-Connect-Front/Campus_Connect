@@ -19,6 +19,11 @@ export default function AdditionalInfoScreen({ route, navigation }) {
   const isSignupEnabled = nickname !== '' && password !== '' && confirmPassword !== '' && nationality !== '';
 
   const handleSignup = async () => {
+    if (nickname.length > 12) {
+      Alert.alert('닉네임 글자수 오류', '닉네임은 12자 이내로 작성해 주세요.');
+      return;
+    }
+
     if (password !== confirmPassword) {
       Alert.alert('비밀번호 오류', '비밀번호가 일치하지 않습니다.');
       return;
@@ -114,13 +119,14 @@ export default function AdditionalInfoScreen({ route, navigation }) {
             placeholder="닉네임을 입력하세요"
             value={nickname}
             onChangeText={setNickname}
+            maxLength={12}
           />
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>비밀번호</Text>
           <TextInput
             style={styles.input}
-            placeholder="비밀번호를 입력하세요"
+            placeholder="비밀번호를 입력하세요(10자 이상)"
             secureTextEntry
             value={password}
             onChangeText={setPassword}

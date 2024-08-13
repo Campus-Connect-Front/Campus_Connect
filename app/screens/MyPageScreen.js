@@ -4,7 +4,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import InfoTableBox from '../components/InfoTableBox';
 import { miniLanguageBox } from '../assets/styles/globalStyles';
-import {API} from '../../config'
+import { API } from '../../config';
+
+import defaultImage from '../assets/images/circle_logo_image.png'; 
+const defaultImageUri = Image.resolveAssetSource(defaultImage).uri;
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).replace(/\./g, '.');
+};
 
 export default function MyPageScreen({ navigation }) {
   const [profile, setProfile] = useState({
@@ -14,97 +27,89 @@ export default function MyPageScreen({ navigation }) {
     department: '',
     studentId: '',
     nationality: '',
-    languages: [],
-    learningLanguages: [],
+    languages: [], 
+    learningLanguages: [], 
+    imgUrl: '',  
   });
-
-  const defaultProfile = {
-    university: '성신여자대학교',
-    nickname: '수정이',
-    birthdate: '20XX.XX.XX',
-    department: '컴퓨터공학과',
-    studentId: '20XXXXXX',
-    nationality: '한국',
-    languages: ['한국어', '영어'],
-    learningLanguages: ['영어', '일본어'],
-    imgUrl:'null',
-  };
 
   const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
-    // 유저 정보 띄우기 
     const loadProfile = async () => {
       try {
-        const userToken = await AsyncStorage.getItem('userToken'); // 로그인한 유저의 토큰 가져오기
+        const userToken = await AsyncStorage.getItem('userToken');
         const response = await fetch(`${API.USER}/mypage`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${userToken}`, // Bearer 토큰을 포함시킴
-                'Content-Type': 'application/json',
-            },
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${userToken}`,
+            'Content-Type': 'application/json',
+          },
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+          throw new Error(`Network response was not ok: ${response.statusText}`);
         }
 
         const data = await response.json();
         setProfile(prevProfile => ({
-            ...prevProfile,
-            university: data.usersDTO.university || prevProfile.university,
-            nickname: data.usersDTO.nickName || prevProfile.nickname,
-            birthdate: data.usersDTO.birthday || prevProfile.birthdate,
-            department: data.userAuthenticationDTO.major || prevProfile.department,
-            studentId: data.userAuthenticationDTO.studentId || prevProfile.studentId,
-            nationality: data.usersDTO.nationality || prevProfile.nationality,
-            languages: data.availableLangDTO.map(lang => lang.lang) || prevProfile.languages,
-            learningLanguages: data.desiredLangDTO.map(lang => lang.lang) || prevProfile.learningLanguages,
-            imgUrl: data.usersDTO.imgUrl || prevProfile.imgUrl,
+          ...prevProfile,
+          university: data.usersDTO.university || prevProfile.university,
+          nickname: data.usersDTO.nickName || prevProfile.nickname,
+          birthdate: formatDate(data.usersDTO.birthday) || prevProfile.birthdate,
+          department: data.userAuthenticationDTO.major || prevProfile.department,
+          studentId: data.userAuthenticationDTO.studentId || prevProfile.studentId,
+          nationality: data.usersDTO.nationality || prevProfile.nationality,
+          languages: data.availableLangDTO.map(lang => lang.lang) || prevProfile.languages,
+          learningLanguages: data.desiredLangDTO.map(lang => lang.lang) || prevProfile.learningLanguages,
+          imgUrl: data.usersDTO.imgUrl || prevProfile.imgUrl,
         }));
-        // 프로필 이미지 띄우기
         loadProfileImage(data.usersDTO.imgUrl);
       } catch (error) {
-        console.error('Failed to load profile:', error);
+        console.error('Failed to load profile:', error.message);
+        Alert.alert('오류', `프로필 정보를 로드하는 중 오류가 발생했습니다: ${error.message}`);
       }
     };
 
-      const unsubscribe = navigation.addListener('focus', () => {
-      loadProfile(); 
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadProfile();
     });
 
     return unsubscribe;
   }, [navigation]);
 
   const loadProfileImage = async (imgUrl) => {
-    if (!imgUrl) console.log("파일이 없습니다");
-    try {
-        const userToken = await AsyncStorage.getItem('userToken');
-        const response = await fetch(`${API.USER}/images/${imgUrl}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${userToken}`,
-            },
-        });
+    if (!imgUrl) {
+      console.log("파일이 없습니다");
+      setProfileImage(defaultImageUri); 
+      return;
+    }
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        const imageUri = response.url;
-        setProfileImage(imageUri);
+    try {
+      const userToken = await AsyncStorage.getItem('userToken');
+      const response = await fetch(`${API.USER}/images/${imgUrl}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${userToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load image: ${response.statusText}`);
+      }
+
+      const imageUri = response.url;
+      setProfileImage(imageUri);
     } catch (error) {
-        console.error('Failed to load profile image:', error);
+      console.error('Failed to load profile image:', error.message);
+      setProfileImage(defaultImageUri); 
+      Alert.alert('오류', `프로필 이미지를 로드하는 중 오류가 발생했습니다: ${error.message}`);
     }
   };
 
-
-  // 프로필 이미지 수정하기
   const pickImage = async () => {
-    // 권한 요청
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (permissionResult.granted === 
-      false) {
+    if (permissionResult.granted === false) {
       Alert.alert("권한이 필요합니다.", "프로필 이미지를 변경하려면 갤러리 접근 권한이 필요합니다.");
       return;
     }
@@ -117,55 +122,54 @@ export default function MyPageScreen({ navigation }) {
     });
 
     if (!result.canceled) {
-      const selectedImage = result.assets[0].uri; // 선택한 이미지 URI
+      const selectedImage = result.assets[0].uri;
       setProfileImage(selectedImage);
       await uploadImage(selectedImage);
-      await AsyncStorage.setItem('profileImage', selectedImage); // AsyncStorage에 저장
+      await AsyncStorage.setItem('profileImage', selectedImage);
     }
   };
-  // 서버에 이미지 저장
+
   const uploadImage = async (imageUri) => {
     const userToken = await AsyncStorage.getItem('userToken');
-
     const formData = new FormData();
     formData.append('file', {
-        uri: imageUri,
-        type: 'image', // 혹은 'image/png'
-        name: 'profile', // 실제로는 파일 이름이 필요할 수 있습니다.
+      uri: imageUri,
+      type: 'image/jpeg', 
+      name: 'profile.jpg',
     });
 
     try {
-        const response = await fetch(`${API.USER}/mypage/edit_profileImg`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${userToken}`,
-            },
-            body: formData,
-        });
-        if (response.ok) {
-            console.log('이미지가 성공적으로 업로드되었습니다:');
-            // 성공 시 프로필 이미지를 다시 로드
-            await loadProfileImage(imageUri);
-        } else {
-            console.error('이미지 업로드 실패:');
-            Alert.alert('오류', data); // 오류 메시지 표시
-        }
+      const response = await fetch(`${API.USER}/mypage/edit_profileImg`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${userToken}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        console.log('이미지가 성공적으로 업로드되었습니다.');
+        await loadProfileImage(imageUri);
+      } else {
+        const errorData = await response.text();
+        console.error('이미지 업로드 실패:', response.status, response.statusText, errorData);
+        Alert.alert('오류', `이미지 업로드 중 오류가 발생했습니다: ${response.statusText}`);
+      }
     } catch (error) {
-        console.error('이미지 업로드 중 오류 발생:', error);
-        Alert.alert('오류', '이미지 업로드 중 문제가 발생했습니다.');
+      console.error('이미지 업로드 중 오류 발생:', error.message);
+      Alert.alert('오류', `이미지 업로드 중 문제가 발생했습니다: ${error.message}`);
     }
-};
+  };
 
   const handleImageChange = () => {
-    if (profileImage === null) {
-      // 기본 이미지일 때: 앨범에서 사진 선택만 제공
+    if (profileImage === null || profileImage === defaultImageUri) {
       Alert.alert(
         "프로필 사진 설정",
         "앨범에서 프로필 이미지로 등록할 사진을 선택하세요.",
         [
           {
             text: "앨범에서 사진 선택",
-            onPress: pickImage, // 갤러리로 이동
+            onPress: pickImage,
           },
           {
             text: "취소",
@@ -174,21 +178,20 @@ export default function MyPageScreen({ navigation }) {
         ]
       );
     } else {
-      // 기본 이미지가 아닐 때: 기본 이미지로 변경 또는 앨범에서 사진 선택 제공
       Alert.alert(
         "프로필 사진 설정",
         "기본 이미지로 변경하거나, 앨범에서 사진을 선택하세요.",
         [
           {
             text: "기본 이미지 적용",
-            onPress: () => {
-              setProfileImage(null); 
-              AsyncStorage.removeItem('profileImage'); // AsyncStorage에서 이미지 삭제
+            onPress: async () => {
+              await AsyncStorage.removeItem('profileImage');
+              setProfileImage(defaultImageUri);
             },
           },
           {
             text: "앨범에서 사진 선택",
-            onPress: pickImage, // 갤러리로 이동
+            onPress: pickImage,
           },
           {
             text: "취소",
@@ -199,8 +202,6 @@ export default function MyPageScreen({ navigation }) {
     }
   };
 
-
-  // 로그아웃
   const handleLogout = async () => {
     Alert.alert(
       "로그아웃",
@@ -214,29 +215,27 @@ export default function MyPageScreen({ navigation }) {
           text: "OK",
           onPress: async () => {
             const userToken = await AsyncStorage.getItem('userToken');
+            try {
+              const response = await fetch(`${API.USER}/logout`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${userToken}`,
+                  'Content-Type': 'application/json',
+                },
+              });
 
-                    try {
-                        const response = await fetch(`${API.USER}/logout`, {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${userToken}`, // 토큰을 포함하여 요청
-                                'Content-Type': 'application/json',
-                            },
-                        });
-
-                        if (response.ok) {
-                            // 서버에서 로그아웃 성공
-                            await AsyncStorage.removeItem('userToken'); // AsyncStorage에서 토큰 삭제
-                            navigation.navigate('Login'); // 로그인 화면으로 이동
-                            console.log('로그아웃되었습니다');
-                        } else {
-                            const errorData = await response.json();
-                            Alert.alert('오류', errorData.message || '로그아웃 중 오류가 발생했습니다.');
-                        }
-                    } catch (error) {
-                        console.error('로그아웃 중 오류 발생:', error);
-                        Alert.alert('오류', '로그아웃 중 문제가 발생했습니다.');
-                    }
+              if (response.ok) {
+                await AsyncStorage.removeItem('userToken');
+                navigation.navigate('Login');
+                console.log('로그아웃되었습니다');
+              } else {
+                const errorData = await response.json();
+                Alert.alert('오류', errorData.message || '로그아웃 중 오류가 발생했습니다.');
+              }
+            } catch (error) {
+              console.error('로그아웃 중 오류 발생:', error.message);
+              Alert.alert('오류', `로그아웃 중 문제가 발생했습니다: ${error.message}`);
+            }
           }
         }
       ]
@@ -249,7 +248,7 @@ export default function MyPageScreen({ navigation }) {
         <TouchableOpacity onPress={handleImageChange} style={styles.profileImageContainer}>
           <View style={styles.profileImageWrapper}>
             <Image
-              source={profileImage ? { uri: profileImage } : require('../assets/images/circle_logo_image.png')} 
+              source={profileImage ? { uri: profileImage } : require('../assets/images/circle_logo_image.png')}
               style={styles.profileImage}
             />
           </View>
@@ -268,23 +267,27 @@ export default function MyPageScreen({ navigation }) {
       </View>
 
       <InfoTableBox
-        style={{ marginTop: 20, width: '95%', alignSelf: 'center', }}
+        style={{ marginTop: 20, width: '95%', alignSelf: 'center' }}
         title='내 정보'
         tableInfos={[
           {
             title: '국적',
-            info: profile.nationality,
+            info: profile.nationality || '로딩 중...',
           },
           {
             title: '구사 가능 언어',
             titleStyle: { fontSize: 12 },
             info: () => (
               <View style={{ flexDirection: 'row' }}>
-                {profile.languages.map((language, index) => (
-                  <View key={index} style={miniLanguageBox.box}>
-                    <Text style={miniLanguageBox.text}>{language}</Text>
-                  </View>
-                ))}
+                {profile.languages.length > 0 ? (
+                  profile.languages.map((language, index) => (
+                    <View key={index} style={miniLanguageBox.box}>
+                      <Text style={miniLanguageBox.text}>{language}</Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text>로딩 중...</Text>
+                )}
               </View>
             ),
           },
@@ -293,11 +296,15 @@ export default function MyPageScreen({ navigation }) {
             titleStyle: { fontSize: 12 },
             info: () => (
               <View style={{ flexDirection: 'row' }}>
-                {profile.learningLanguages.map((language, index) => (
-                  <View key={index} style={miniLanguageBox.box}>
-                    <Text style={miniLanguageBox.text}>{language}</Text>
-                  </View>
-                ))}
+                {profile.learningLanguages.length > 0 ? (
+                  profile.learningLanguages.map((language, index) => (
+                    <View key={index} style={miniLanguageBox.box}>
+                      <Text style={miniLanguageBox.text}>{language}</Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text>로딩 중...</Text>
+                )}
               </View>
             ),
           },
@@ -324,6 +331,7 @@ const styles = StyleSheet.create({
   profileContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginRight: 120,
   },
   profileImageContainer: {
     position: 'relative',
@@ -361,6 +369,9 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginVertical: 8,
+    flexWrap: 'wrap',
+    flexShrink: 1, 
+    marginBottom: 20,
   },
   infoText: {
     fontSize: 16,
@@ -369,7 +380,7 @@ const styles = StyleSheet.create({
   editProfile: {
     color: '#7F7F7F',
     textDecorationLine: 'underline',
-    textAlign: 'center',
+    textAlign: 'right',
     marginTop: -10,
     marginBottom: 5,
   },

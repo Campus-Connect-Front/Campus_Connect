@@ -13,22 +13,6 @@ export default function EditMyInfoScreen({ route, navigation }) {
   const isSaveEnabled = nationality !== "" && languages.length > 0 && learningLanguages.length > 0;
 
   const handleSave = () => {
-    /*
-    if (!nationality) {
-      Alert.alert('오류', '국적을 선택해야 합니다.');
-      return;
-    }
-    if (languages.length === 0) {
-      Alert.alert('오류', '구사 가능 언어를 최소 하나 이상 선택해야 합니다.');
-      return;
-    }
-    if (learningLanguages.length === 0) {
-      Alert.alert('오류', '희망 학습 언어를 최소 하나 이상 선택해야 합니다.');
-      return;
-    }
-      */
-
-    
     const joinRequestDTO = {
       usersDTO: {
         nationality,

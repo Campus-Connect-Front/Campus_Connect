@@ -11,7 +11,31 @@ export default function SignupScreen({ navigation }) {
 
     const isNextButtonDisabled = !(studentId && department && name);
 
+    const showAlert = (title, message) => {
+        Alert.alert(title, message);
+    };
+
+    const validateInputs = () => {
+        if (studentId.length !== 8) {
+            showAlert("학번 오류", "학번은 8자리에 맞게 작성해 주세요.");
+            return false;
+        }
+        if (department.length < 2 || department.length > 30) {
+            showAlert("학과 글자수 오류", "학과는 2글자 이상, 30자 이하로 작성해 주세요.");
+            return false;
+        }
+        if (name.length < 2 || name.length > 18) {
+            showAlert("이름 글자수 오류", "이름은 2글자 이상, 18자 이하로 작성해 주세요.");
+            return false;
+        }
+        return true;
+    };
+
     const handleVerification = async () => {
+        if (!validateInputs()) {
+            return;
+        }
+
         setVerificationModalVisible(true);
         try {
             const response = await fetch(`${API.USER}/auth`, {
@@ -35,21 +59,18 @@ export default function SignupScreen({ navigation }) {
 
             if (result === "인증되었습니다.") {
                 setVerificationComplete(true);
-            } else if (result === "재학생 인증 실패: 학번, 이름, 전공이 일치하지 않습니다.") {
-                setVerificationModalVisible(false);
-                Alert.alert("인증 실패", "해당 정보로 등록된 재학생이 없습니다."); 
-            } else if (result === "이미 회원가입한 사용자입니다.") {
-                setVerificationModalVisible(false); 
-                Alert.alert("인증 실패", "이미 존재하는 사용자입니다.");
             } else {
-                setVerificationModalVisible(false); 
-                Alert.alert("인증 실패", result);
+                handleVerificationError(result);
             }
         } catch (error) {
             console.error('Error during verification:', error);
-            setVerificationModalVisible(false);
-            Alert.alert("오류", "인증 중 오류가 발생했습니다."); 
+            handleVerificationError("인증 중 오류가 발생했습니다.");
         }
+    };
+
+    const handleVerificationError = (message) => {
+        setVerificationModalVisible(false);
+        showAlert("인증 실패", message);
     };
 
     const handleVerificationConfirm = () => {
@@ -72,6 +93,7 @@ export default function SignupScreen({ navigation }) {
                         placeholder="학번"
                         value={studentId}
                         onChangeText={setStudentId}
+                        maxLength={8}
                     />
                 </View>
                 <View style={styles.inputContainer}>
@@ -81,6 +103,7 @@ export default function SignupScreen({ navigation }) {
                         placeholder="학과"
                         value={department}
                         onChangeText={setDepartment}
+                        maxLength={30}
                     />
                 </View>
                 <View style={styles.inputContainer}>
@@ -90,6 +113,7 @@ export default function SignupScreen({ navigation }) {
                         placeholder="이름"
                         value={name}
                         onChangeText={setName}
+                        maxLength={18}
                     />
                 </View>
                 <TouchableOpacity
