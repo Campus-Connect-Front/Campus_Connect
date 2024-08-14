@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, Image, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Text, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API } from '../../config';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen({ navigation }) {
   const [studentId, setStudentId] = useState('');
@@ -40,13 +39,11 @@ export default function LoginScreen({ navigation }) {
         Alert.alert("로그인 실패", '아이디(학번) 또는 비밀번호가 올바르지 않습니다.');
       } else {
         // 로그인 성공
-        // 로그인 성공 시 studentId를 AsyncStorage에 저장
         await AsyncStorage.setItem('userId', studentId);
         console.log('아이디: ',studentId);
         console.log('Login successful');
         console.log(studentId);
         navigation.navigate('Main');
-        await AsyncStorage.setItem('userId', studentId);
       }
     } catch (error) {
       console.error('네트워크 오류 발생:', error);

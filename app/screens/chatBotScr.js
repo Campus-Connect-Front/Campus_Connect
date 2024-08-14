@@ -84,7 +84,7 @@ export const ChatBotScreen = ({ route }) => {
   );
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={80}>
+    <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={50}>
       <Image
         source={require('../assets/Logo_ver2.png')}
         style={styles.logo}
@@ -206,6 +206,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     width: '100%',
     alignItems: 'center',
+    marginBottom: 0,
   },
   input: {
     flex: 1,
