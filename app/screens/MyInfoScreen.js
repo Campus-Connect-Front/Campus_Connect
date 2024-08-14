@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Image, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 import { API } from '../../config';
 
 const formatDate = (dateString) => {
@@ -30,14 +29,17 @@ const MyInfoScreen = ({ navigation }) => {
     const loadProfile = async () => {
       try {
         const userToken = await AsyncStorage.getItem('userToken');
-        const response = await axios.get(`${API.USER}/mypage`, {
+        const response = await fetch(`${API.USER}/mypage`, {
           headers: {
             Authorization: `Bearer ${userToken}`,
           },
         });
 
-        // 서버에서 프로필 데이터 가져오기
-        const data = response.data;
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
         setProfile(prevProfile => ({
           ...prevProfile,
           name: data.userAuthenticationDTO.studentName || prevProfile.name,
