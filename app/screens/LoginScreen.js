@@ -39,10 +39,11 @@ export default function LoginScreen({ navigation }) {
         Alert.alert("로그인 실패", '아이디(학번) 또는 비밀번호가 올바르지 않습니다.');
       } else {
         // 로그인 성공
+        await AsyncStorage.setItem('userId', studentId);
+        console.log('아이디: ',studentId);
         console.log('Login successful');
         console.log(studentId);
         navigation.navigate('Main');
-        await AsyncStorage.setItem('userId', studentId);
       }
     } catch (error) {
       console.error('네트워크 오류 발생:', error);

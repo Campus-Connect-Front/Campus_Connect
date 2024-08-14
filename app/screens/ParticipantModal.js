@@ -9,6 +9,7 @@ export const ParticipantModal = ({ isVisible, onClose, participants, userName })
   const [sortedParticipants, setSortedParticipants] = useState([]);
 
   useEffect(() => {
+    // 사용자를 나를 먼저, 나머지 사용자를 그 뒤에 정렬
     const sorted = [participants.find(p => p.name === userName), ...participants.filter(p => p.name !== userName)];
     setSortedParticipants(sorted);
   }, [participants, userName]);
@@ -47,8 +48,10 @@ export const ParticipantModal = ({ isVisible, onClose, participants, userName })
     onClose();
   };
 
+  // 각 참가자를 렌더링하는 함수
   const renderParticipant = ({ item }) => (
     <View style={styles.participantContainer}>
+      {/* 참가자의 프로필 이미지를 표시하는 부분 */}
       <Image source={item.profileImage} style={styles.participantImage} />
       <View style={styles.nameContainer}>
         {item.name === userName ? (
@@ -139,10 +142,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   participantImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 15,
+    width: 40, // 프로필 이미지의 너비 설정
+    height: 40, // 프로필 이미지의 높이 설정
+    borderRadius: 20, // 프로필 이미지를 둥글게 만들기 위한 설정
+    marginRight: 15, // 프로필 이미지와 이름 사이의 간격
   },
   nameContainer: {
     flexDirection: 'row',
