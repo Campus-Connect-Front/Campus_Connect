@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Image, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 import { API } from '../../config';
 
 const formatDate = (dateString) => {
@@ -30,16 +29,17 @@ const MyInfoScreen = ({ navigation }) => {
     const loadProfile = async () => {
       try {
         const userToken = await AsyncStorage.getItem('userToken');
-        const response = await axios.get(`${API.USER}/mypage`, {
+        const response = await fetch(`${API.USER}/mypage`, {
           headers: {
             Authorization: `Bearer ${userToken}`,
           },
         });
 
-        // 서버에서 프로필 데이터 가져오기
-        const data = response.data;
-        console.log('Fetched data:', data);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
 
+        const data = await response.json();
         setProfile(prevProfile => ({
           ...prevProfile,
           name: data.userAuthenticationDTO.studentName || prevProfile.name,
@@ -48,31 +48,39 @@ const MyInfoScreen = ({ navigation }) => {
           birthdate: formatDate(data.usersDTO.birthday) || prevProfile.birthdate,
           nickname: data.usersDTO.nickName || prevProfile.nickname,
         }));
-
-        await AsyncStorage.setItem('nickname', nickname);
-        console.log('Nickname has been saved to AsyncStorage:', nickname);
-
       } catch (error) {
         Alert.alert('오류', '프로필 정보를 불러오는 데 실패했습니다.');
       }
     };
 
     loadProfile();
-    console.log("nickname:",nickname);
   }, []);
 
   const handleLogout = () => setShowModal(true);
 
-  const confirmLogout = async () => {
+  const handleDeleteAccount = async () => {
     try {
+      const userToken = await AsyncStorage.getItem('userToken');
+      
+      const response = await fetch(`${API.USER}/delete`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+  
       await AsyncStorage.removeItem('userToken');
       setShowModal(false);
       Alert.alert('알림', '탈퇴가 완료되었습니다.');
-      navigation.navigate('Login');
+      navigation.navigate('LoginStack');
     } catch (error) {
       Alert.alert('오류', '탈퇴하는 데 실패했습니다.');
     }
-  };
+  };  
 
   // 값이 없거나 비어 있는 문자열인 경우
   const renderProfileInfo = (value) => {
@@ -131,7 +139,7 @@ const MyInfoScreen = ({ navigation }) => {
             <Text style={styles.modalText}>
               정말로 탈퇴하시겠습니까?{'\n'}그동안 앱에 저장된 내역들은{'\n'}복구되지 않습니다.
             </Text>
-            <TouchableOpacity onPress={confirmLogout} style={styles.modalButton}>
+            <TouchableOpacity onPress={handleDeleteAccount} style={styles.modalButton}>
               <Text style={styles.modalButtonText}>탈퇴하기</Text>
             </TouchableOpacity>
           </View>
