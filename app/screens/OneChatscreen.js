@@ -52,55 +52,65 @@ export const OneChatScreen = ({ route }) => {
   }, []);
 
   // studentId 불러오기 및 nickname 가져오기
-  useEffect(() => {
+  const [profileImageUri, setProfileImageUri] = useState('');
+
+useEffect(() => {
     const loadUserProfile = async () => {
-      try {
         const userToken = await AsyncStorage.getItem('userToken');
-        const response = await fetch(`${API.USER}/mypage`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${userToken}`,
-            'Content-Type': 'application/json',
-          },
-        });
 
-        if (!response.ok) {
-          throw new Error(`Network response was not ok: ${response.statusText}`);
+        try {
+            const response = await fetch(`${API.USER}/mypage`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${userToken}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(`네트워크 응답이 올바르지 않습니다: ${errorData}`);
+            }
+
+            const data = await response.json();
+            const fetchedProfileImageUri = `${API.USER}/images/${data.usersDTO.imgUrl}?${new Date().getTime()}`;
+
+            // 상태 업데이트
+            setUserId(data.userAuthenticationDTO.studentId);
+            setNickname(data.usersDTO.nickName);
+            setProfileImageUri(fetchedProfileImageUri);
+
+            console.log('프로필 정보 로드 성공:', {
+                id: data.userAuthenticationDTO.studentId,
+                nickname: data.usersDTO.nickName,
+                profileImageUri: fetchedProfileImageUri,
+            });
+
+        } catch (error) {
+            const errorMessage = error?.message || '알 수 없는 오류가 발생했습니다';
+            console.error('프로필 정보를 불러오는 데 실패했습니다:', errorMessage);
+            Alert.alert('오류', `프로필 정보를 불러오는 데 실패했습니다: ${errorMessage}`);
         }
-
-        const data = await response.json();
-        const storedUserId = data.userAuthenticationDTO.studentId;
-        const fetchedNickname = data.usersDTO.nickName;
-        const fetchedProfileImage = `${API.USER}/images/${data.usersDTO.imgUrl}`;
-
-        setUserId(storedUserId);
-        setNickname(fetchedNickname);
-        setProfileImage(fetchedProfileImage);
-
-        console.log('Loaded id from API:', storedUserId);
-        console.log('Loaded nickname from API:', fetchedNickname);
-
-      } catch (error) {
-        console.error('Failed to load user profile:', error.message);
-        Alert.alert('오류', '프로필 정보를 불러오는 데 실패했습니다.');
-      }
     };
 
     loadUserProfile();
-  }, []);
+}, []);
+
+
+
 
 
   useEffect(() => {
     // 프로필 이미지를 AsyncStorage에서 불러오는 함수
-    const loadProfileImages = async () => {
-      try {
-        const otherImage = await AsyncStorage.getItem(`profileImage-${roomId}`); // 상대방의 프로필 이미지 가져오기 (채팅방 ID 기준으로 구분)
-        setOtherProfileImage(otherImage);
-      } catch (error) {
-        console.error('Failed to load profile images:', error);
-      }
-    };
-    loadProfileImages(); // 컴포넌트가 마운트될 때 프로필 이미지 로드
+    // const loadProfileImages = async () => {
+    //   try {
+    //     const otherImage = await AsyncStorage.getItem(`profileImage-${roomId}`); // 상대방의 프로필 이미지 가져오기 (채팅방 ID 기준으로 구분)
+    //     setOtherProfileImage(otherImage);
+    //   } catch (error) {
+    //     console.error('Failed to load profile images:', error);
+    //   }
+    // };
+    // loadProfileImages(); // 컴포넌트가 마운트될 때 프로필 이미지 로드
 
     // sockJS 클라이언트 생성 및 websocket 연결
     const socket = new SockJS("http://192.168.45.57:8090/stomp/chat");
@@ -148,7 +158,7 @@ export const OneChatScreen = ({ route }) => {
           // 각 필드가 존재하는지 확인하고 기본값을 설정
           const senderId = receivedMessage.studentId || 'Unknown Sender';
           const id = receivedMessage.messageId || `${Date.now()}`; 
-          const profileImage = receivedMessage.profileImage || profileImage;
+          const profileImageUri = profileImageUri;
           const senderName = nickname || '익명';
           const timestamp = receivedMessage.sendTime 
             ? new Date(receivedMessage.sendTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) 
@@ -177,7 +187,8 @@ export const OneChatScreen = ({ route }) => {
         body: JSON.stringify({
           roomId: roomId,
           userId: userId,
-          messageType: 'ENTER'
+          messageType: 'ENTER',
+          senderName: nickname
         }),
       });
     };
@@ -201,7 +212,7 @@ export const OneChatScreen = ({ route }) => {
         }
       }
     };
-  }, [roomId, userId, otherProfileImage]); // 상대방의 프로필 이미지 상태를 의존성에 추가
+  }, [roomId, userId, profileImageUri]); // 상대방의 프로필 이미지 상태를 의존성에 추가
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -242,13 +253,14 @@ export const OneChatScreen = ({ route }) => {
         {!item.isMine && (
           <>
             <Image
-              source={item.profileImage ? { uri: item.profileImage } : require('../assets/circle_logo.png')}
+              source={profileImage ? { uri: profileImage } : require('../assets/circle_logo.png')}
               style={styles.profileImage}
+              onError={(error) => console.log('Image Load Error:', error.nativeEvent.error)}
             />
           </>
         )}
         <View style={styles.messageContentContainer}>
-          {!item.isMine && <Text style={styles.senderName}>{item.senderName || '익명'}</Text>}
+          {!item.isMine && <Text style={styles.senderName}>{nickname || '익명'}</Text>}
           <View style={item.isMine ? styles.myBubbleContainer : styles.otherBubbleContainer}>
             <View style={[styles.bubble, item.isMine ? styles.myBubble : styles.otherBubble]}>
               <Text style={item.isMine ? styles.myMessageText : styles.otherMessageText}>{item.messageContent}</Text>
