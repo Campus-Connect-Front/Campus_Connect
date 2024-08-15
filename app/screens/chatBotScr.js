@@ -16,12 +16,35 @@ export const ChatBotScreen = ({ route }) => {
 
   const botResponses = {
     '안녕하세요': '안녕하세요! 무엇을 도와드릴까요?',
-    '학교 공지': '학교 공지는 다음과 같습니다: ...',
-    '수강신청 알림': '수강신청 알림입니다: ...',
+    '학교 공지': '학교 공지는 다음과 같습니다: https://www.sungshin.ac.kr/main_kor/11107/subview.do 입니다',
+    '수강신청': '수강신청 정보입니다 : 강의시간표 조회: 2024. 7. 9.(화) 이후\n수강신청시스템 → 개설강좌조회\n관심강좌신청: 2024. 7. 30.(화) 10:00 ~ 8. 5.(월) 17:00\n수강신청시스템 → 관심강좌신청\n수강신청: 2024. 8. 13.(화) 10:00 ~ 8. 16.(금) 17:00\n*8. 15.(목) 광복절: 수강신청 기간에 포함. 단 질의 응대 불가\n수강정정: 2024. 9. 2.(월) 13:00 ~ 9. 9.(월) 11:00\n수강신청시스템 → 수강신청\n수강철회: 2024. 9. 23.(월) 10:00 ~ 9. 27.(금) 17:00\n통합정보시스템 → 수강철회/포기신청',
     '기본': '죄송해요, 잘 이해하지 못했습니다. 다른 질문을 해주세요.',
   };
+  
+  const sendMessageToAPI = async (messageText) => {
+    try {
+        const response = await fetch('http://43.200.177.234:8080/query/NORMAL', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: messageText }),
+        });
 
-  const handleSend = (messageText) => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Received data:', data); // 응답 데이터 로그
+        return data.Answer || '응답을 받을 수 없습니다.';
+    } catch (error) {
+        console.error('Error sending message to API:', error);
+        return '죄송해요, 서버에 연결할 수 없습니다.';
+    }
+};
+
+  const handleSend = async (messageText) => {
     if (messageText.trim()) {
       const userMessage = {
         id: (messages.length + 1).toString(),
@@ -31,11 +54,24 @@ export const ChatBotScreen = ({ route }) => {
 
       setMessages(prevMessages => [...prevMessages, userMessage]);
 
-      const botMessage = {
-        id: (messages.length + 2).toString(),
-        text: botResponses[messageText.trim()] || botResponses['기본'],
-        isMine: false
-      };
+      let botMessage;
+
+      if (botResponses[messageText.trim()]) {
+        // Use predefined response
+        botMessage = {
+          id: (messages.length + 2).toString(),
+          text: botResponses[messageText.trim()],
+          isMine: false
+        };
+      } else {
+         // Send message to API
+         const apiResponse = await sendMessageToAPI(messageText);
+         botMessage = {
+           id: (messages.length + 2).toString(),
+           text: apiResponse,
+           isMine: false
+         };
+       }
 
       setTimeout(() => {
         setMessages(prevMessages => [...prevMessages, botMessage]);
@@ -65,8 +101,8 @@ export const ChatBotScreen = ({ route }) => {
             <TouchableOpacity style={styles.optionButton} onPress={() => handleSend('학교 공지')}>
               <Text style={styles.optionButtonText}>학교 공지</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.optionButton} onPress={() => handleSend('수강신청 알림')}>
-              <Text style={styles.optionButtonText}>수강신청 알림</Text>
+            <TouchableOpacity style={styles.optionButton} onPress={() => handleSend('수강신청')}>
+              <Text style={styles.optionButtonText}>수강신청</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -238,3 +274,4 @@ const styles = StyleSheet.create({
     color: '#5678F0',
   },
 });
+

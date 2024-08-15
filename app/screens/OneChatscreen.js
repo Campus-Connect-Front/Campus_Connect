@@ -16,6 +16,8 @@ export const OneChatScreen = ({ route }) => {
   const { chatName, roomId } = route.params;
   const navigation = useNavigation();
   const [userId, setUserId] = useState(null);
+  const [nickname, setNickname] = useState('');
+  const [profileImage, setProfileImage] = useState(null);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
@@ -49,6 +51,45 @@ export const OneChatScreen = ({ route }) => {
     loadUserId();
   }, []);
 
+  // studentId 불러오기 및 nickname 가져오기
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        const userToken = await AsyncStorage.getItem('userToken');
+        const response = await fetch(`${API.USER}/mypage`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${userToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Network response was not ok: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const storedUserId = data.userAuthenticationDTO.studentId;
+        const fetchedNickname = data.usersDTO.nickName;
+        const fetchedProfileImage = `${API.USER}/images/${data.usersDTO.imgUrl}`;
+
+        setUserId(storedUserId);
+        setNickname(fetchedNickname);
+        setProfileImage(fetchedProfileImage);
+
+        console.log('Loaded id from API:', storedUserId);
+        console.log('Loaded nickname from API:', fetchedNickname);
+
+      } catch (error) {
+        console.error('Failed to load user profile:', error.message);
+        Alert.alert('오류', '프로필 정보를 불러오는 데 실패했습니다.');
+      }
+    };
+
+    loadUserProfile();
+  }, []);
+
+
   useEffect(() => {
     // 프로필 이미지를 AsyncStorage에서 불러오는 함수
     const loadProfileImages = async () => {
@@ -62,7 +103,7 @@ export const OneChatScreen = ({ route }) => {
     loadProfileImages(); // 컴포넌트가 마운트될 때 프로필 이미지 로드
 
     // sockJS 클라이언트 생성 및 websocket 연결
-    const socket = new SockJS("http://172.30.1.55:8090/stomp/chat");
+    const socket = new SockJS("http://192.168.45.57:8090/stomp/chat");
     const stomp = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {
@@ -83,41 +124,53 @@ export const OneChatScreen = ({ route }) => {
       
       // 저장된 채팅 불러오기
       fetch(`${API.CHAT}/room/${roomId}`)
-        .then(response => {
-          console.log('Content-Type:', response.headers.get('Content-Type'));
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json(); // 응답을 JSON으로 읽기
-        })
+        .then(response => response.json())
         .then(data => {
-          console.log('Fetched data:', data);
-          // 기존 메시지를 지우지 않고 추가
-          setMessages((prevMessages) => [...data, ...prevMessages]);
+          setMessages(data.slice(-3)); 
         })
         .catch(error => {
           console.error('Error fetching messages: ', error);
           Alert.alert('Error', '메시지 로딩 중 오류가 발생했습니다.');
         });
 
+
        // 구독
        stomp.subscribe(`/sub/chat/room/${roomId}`, (message) => {
         try {
           const receivedMessage = JSON.parse(message.body);
-          // 화면에 뿌릴 내용
+          //console.log('Received raw message:', receivedMessage);
+          
+          const user = receivedMessage.userId || {};
+          const student = user.studentId || {};
+          //console.log('NickName in received message:', user.nickName);
+
+
+          // 각 필드가 존재하는지 확인하고 기본값을 설정
+          const senderId = receivedMessage.studentId || 'Unknown Sender';
+          const id = receivedMessage.messageId || `${Date.now()}`; 
+          const profileImage = receivedMessage.profileImage || profileImage;
+          const senderName = nickname || '익명';
+          const timestamp = receivedMessage.sendTime 
+            ? new Date(receivedMessage.sendTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) 
+            : 'Invalid Date';
+      
           const formattedMessage = {
-            id: receivedMessage.id,
+            id: id,
             messageContent: receivedMessage.messageContent,
-            timestamp: new Date(receivedMessage.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-            isMine: receivedMessage.senderId === userId, // 메시지의 발신자가 현재 사용자 ID와 일치하는지 확인
+            timestamp: timestamp,
+            isMine: senderId === userId,
+            senderName: senderName,
+            profileImage: profileImage,
+            senderId: senderId
           };
-          setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+          //console.log('Formatted message:', formattedMessage);      
+          setMessages((prevMessages) => [...prevMessages, formattedMessage]);
         } catch (error) {
           console.error('Message processing error: ', error);
           Alert.alert('Error', 'An error occurred while processing the message.');
         }
       });
-  
+      
       // 유저 최초 입장 메시지 발송 (최초에만 보내기 위해 useEffect에서 설정)
       stomp.publish({
         destination: '/pub/chat/enter',
@@ -174,7 +227,8 @@ export const OneChatScreen = ({ route }) => {
     });
   }, [navigation, chatName]);
 
-  const renderItem = ({ item, index }) => {
+  const renderItem = ({ item }) => {
+    // 시스템 메시지 처리
     if (item.messageType === 'ENTER' || item.messageType === 'LEAVE') {
       return (
         <View style={styles.systemMessageContainer}>
@@ -184,25 +238,43 @@ export const OneChatScreen = ({ route }) => {
     }
   
     return (
-      <View style={[styles.messageContainer, item.isMine ? styles.myMessageContainer : styles.otherMessageContainer]}>
+      <View style={item.isMine ? styles.myMessageContainer : styles.otherMessageContainer}>
         {!item.isMine && (
           <>
-            {/* 상대방의 프로필 이미지를 표시 */}
-            <Image source={item.profileImage ? { uri: item.profileImage } : require('../assets/circle_logo.png')} style={styles.profileImage} />
-            <Text style={styles.senderName}>{item.senderName}</Text>
+            <Image
+              source={item.profileImage ? { uri: item.profileImage } : require('../assets/circle_logo.png')}
+              style={styles.profileImage}
+            />
           </>
         )}
-        <View>
-          <View style={[styles.bubbleContainer, item.isMine ? styles.myBubbleContainer : styles.otherBubbleContainer]}>
+        <View style={styles.messageContentContainer}>
+          {!item.isMine && <Text style={styles.senderName}>{item.senderName || '익명'}</Text>}
+          <View style={item.isMine ? styles.myBubbleContainer : styles.otherBubbleContainer}>
             <View style={[styles.bubble, item.isMine ? styles.myBubble : styles.otherBubble]}>
               <Text style={item.isMine ? styles.myMessageText : styles.otherMessageText}>{item.messageContent}</Text>
             </View>
+            <Text style={item.isMine ? styles.myMessageTime : styles.otherMessageTime}>{item.timestamp}</Text>
           </View>
-          <Text style={item.isMine ? styles.myMessageTime : styles.otherMessageTime}>{item.timestamp}</Text>
         </View>
       </View>
     );
   };
+  
+  // const handleNewMessage = (newMessage) => {
+  //   setMessages(prevMessages => {
+  //     const updatedMessages = [...prevMessages, newMessage];
+
+  //     if (updatedMessages.length > 10) {
+  //       // Save old messages to AsyncStorage
+  //       AsyncStorage.setItem('oldMessages', JSON.stringify(updatedMessages.slice(0, -5)));
+
+  //       // Return only the last 10 messages
+  //       return updatedMessages.slice(-5);
+  //     }
+
+  //     return updatedMessages;
+  //   });
+  // };
 
   const handleSend = () => {
     if (stompClient && stompClient.connected) {
@@ -212,24 +284,17 @@ export const OneChatScreen = ({ route }) => {
         return;
       }
       else{console.log(userId);}
+      console.log('Sending message as:', nickname);
       const newMessage = {
         roomId: roomId,
         studentId: userId,
+        senderId: userId,
+        senderName: nickname,
         messageContent: inputMessage,
         messageType: 'TALK',
         timestamp: new Date().toISOString(),
       };
       try {
-        setMessages(prevMessages => [
-          ...prevMessages,
-          {
-            id: `${Date.now()}`,
-            messageContent: inputMessage,
-            timestamp: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-            isMine: true, 
-          }
-        ]);
-
         // WebSocket으로 메시지 전송
         stompClient.publish({
           destination: '/pub/chat/message',
@@ -357,35 +422,56 @@ const styles = StyleSheet.create({
   messageContainer: {
     flexDirection: 'row',
     marginVertical: 5,
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   myMessageContainer: {
+    flexDirection: 'row',
     justifyContent: 'flex-end',
     alignSelf: 'flex-end', // 오른쪽 정렬
     paddingRight: 10,
   },
   otherMessageContainer: {
+    flexDirection: 'row',
     justifyContent: 'flex-start',
     alignSelf: 'flex-start', // 왼쪽 정렬
     paddingLeft: 10,
   },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  messageContentContainer: {
+    flexDirection: 'column',
+    maxWidth: '80%', // 메시지 최대 너비 설정
+  },
+  senderName: {
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
   bubbleContainer: {
     flexDirection: 'column',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   bubble: {
-    maxWidth: '100%',
     padding: 10,
     borderRadius: 10,
   },
+  myBubbleContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+  },
+  otherBubbleContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
   myBubble: {
     backgroundColor: '#5678F0',
-    alignSelf: 'flex-end',
     borderTopRightRadius: 0,
   },
   otherBubble: {
     backgroundColor: '#BDD7FF',
-    alignSelf: 'flex-start',
     borderTopLeftRadius: 0,
   },
   myMessageText: {
@@ -394,11 +480,25 @@ const styles = StyleSheet.create({
   otherMessageText: {
     color: '#000',
   },
-  profileImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
+  myMessageTime: {
+    color: '#9291A6',
+    fontSize: 10,
+    alignSelf: 'flex-start',
+    marginTop: 2,
+  },
+  otherMessageTime: {
+    color: '#9291A6',
+    fontSize: 10,
+    alignSelf: 'flex-start',
+    marginTop: 2,
+  },
+  systemMessageContainer: {
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  systemMessageText: {
+    color: '#888',
+    fontSize: 12,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -423,25 +523,5 @@ const styles = StyleSheet.create({
   },
   emojiButton: {
     marginRight: 10,
-  },
-  myMessageTime: {
-    color: '#9291A6',
-    fontSize: 10,
-    alignSelf: 'flex-start',
-    marginTop: 2,
-  },
-  otherMessageTime: {
-    color: '#9291A6',
-    fontSize: 10,
-    alignSelf: 'flex-end',
-    marginTop: 2,
-  },
-  systemMessageContainer: {
-    alignItems: 'center',
-    marginVertical: 5,
-  },
-  systemMessageText: {
-    color: '#888',
-    fontSize: 12,
   },
 });
