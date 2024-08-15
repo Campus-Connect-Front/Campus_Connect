@@ -44,7 +44,7 @@ const DayBox = ({ Day }) => {
 const BoardDetail = ({ parentNav, item, route, navigation }) => {
     const [splash, setSplash] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
-    const [isAuthor, setIsAuthor] = useState(true);
+    const [isAuthor, setIsAuthor] = useState(false);
     const { postId, chatRoomId } = item;
     const [postData, setPostData] = useState({});
     const [recruitNum, setRecruitNum] = useState(0);
