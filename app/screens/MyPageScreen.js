@@ -5,6 +5,8 @@ import * as ImagePicker from 'expo-image-picker';
 import InfoTableBox from '../components/InfoTableBox';
 import { miniLanguageBox } from '../assets/styles/globalStyles';
 import { API } from '../../config';
+import * as FileSystem from 'expo-file-system';
+import { Asset } from 'expo-asset';
 
 import defaultImage from '../assets/images/circle_logo_image.png'; 
 const defaultImageUri = Image.resolveAssetSource(defaultImage).uri;
@@ -17,6 +19,18 @@ const formatDate = (dateString) => {
     month: '2-digit',
     day: '2-digit',
   }).replace(/\./g, '.');
+};
+
+const getFileExtension = (uri) => {
+  if (uri.endsWith('.jpg') || uri.endsWith('.jpeg')) return '.jpg';
+  if (uri.endsWith('.png')) return '.png';
+  
+  const extension = uri.split('.').pop();
+  if (['jpg', 'jpeg', 'png'].includes(extension)) {
+    return `.${extension}`;
+  }
+  
+  throw new Error("지원하지 않는 이미지 파일 형식입니다.");
 };
 
 export default function MyPageScreen({ navigation }) {
@@ -64,9 +78,16 @@ export default function MyPageScreen({ navigation }) {
           imgUrl: data.usersDTO.imgUrl || prevProfile.imgUrl,
         }));
         loadProfileImage(data.usersDTO.imgUrl);
-      } catch (error) {
-        console.error('Failed to load profile:', error.message);
-        Alert.alert('오류', `프로필 정보를 로드하는 중 오류가 발생했습니다: ${error.message}`);
+      } catch (err) {
+        const errorMessage = err?.message || err?.toString() || 'Unknown error occurred'; 
+        console.error(
+          `Failed to load profile.\n` +
+          `Error Message: ${errorMessage}\n` +
+          `API Endpoint: ${API.USER}/mypage\n` +
+          `User Token: ${userToken ? 'Exists' : 'Missing'}`
+        );
+    
+        Alert.alert('오류', `프로필 정보를 로드하는 중 오류가 발생했습니다: ${errorMessage}`);
       }
     };
 
@@ -78,12 +99,13 @@ export default function MyPageScreen({ navigation }) {
   }, [navigation]);
 
   const loadProfileImage = async (imgUrl) => {
+    console.log("요청할 이미지 URL:", imgUrl);
     if (!imgUrl) {
       console.log("파일이 없습니다");
       setProfileImage(defaultImageUri); 
       return;
     }
-
+  
     try {
       const userToken = await AsyncStorage.getItem('userToken');
       const response = await fetch(`${API.USER}/images/${imgUrl}`, {
@@ -92,72 +114,162 @@ export default function MyPageScreen({ navigation }) {
           'Authorization': `Bearer ${userToken}`,
         },
       });
-
+  
       if (!response.ok) {
-        throw new Error(`Failed to load image: ${response.statusText}`);
+        const errorMessage = `Failed to load image (HTTP Status: ${response.status} ${response.statusText}) - Image URL: ${imgUrl}`;
+        throw new Error(errorMessage);
       }
-
-      const imageUri = response.url;
-      setProfileImage(imageUri);
-    } catch (error) {
-      console.error('Failed to load profile image:', error.message);
+  
+      // Blob으로 응답을 받아오기
+      const imageBlob = await response.blob();    
+      // Blob을 Base64로 변환
+      const base64Data = await blobToBase64(imageBlob);
+      // 로컬 파일 경로 정의
+      const fileUri = `${FileSystem.documentDirectory}${imgUrl}`;
+      // Base64를 파일로 저장
+      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+  
+      console.log("서버로부터 받은 이미지 URI:", fileUri);
+      setProfileImage(fileUri);
+      
+    } catch (err) { 
+      const errorMessage = err?.message || err?.toString() || 'Unknown error occurred';
+      console.error('Failed to load profile image:', errorMessage);
       setProfileImage(defaultImageUri); 
-      Alert.alert('오류', `프로필 이미지를 로드하는 중 오류가 발생했습니다: ${error.message}`);
+      Alert.alert('오류', `프로필 이미지를 로드하는 중 오류가 발생했습니다: ${errorMessage}`);
     }
   };
+  
+  // Blob을 Base64로 변환하는 함수
+  const blobToBase64 = async (blob) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result.split(',')[1]; // Data URL에서 Base64 부분만 가져오기
+        resolve(base64String);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };  
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
+    
     if (permissionResult.granted === false) {
       Alert.alert("권한이 필요합니다.", "프로필 이미지를 변경하려면 갤러리 접근 권한이 필요합니다.");
       return;
     }
-
+    
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
     });
-
+    
     if (!result.canceled) {
       const selectedImage = result.assets[0].uri;
-      setProfileImage(selectedImage);
-      await uploadImage(selectedImage);
-      await AsyncStorage.setItem('profileImage', selectedImage);
+      console.log("선택한 프로필 이미지 URI:", selectedImage);
+      await uploadImage(selectedImage); 
     }
-  };
+  };  
 
   const uploadImage = async (imageUri) => {
+    console.log("업로드할 이미지 URI:", imageUri); 
     const userToken = await AsyncStorage.getItem('userToken');
+
     const formData = new FormData();
+
+    const fileExtension = getFileExtension(imageUri);
+    const fileName = `profile${fileExtension}`;
+    const fileType = `image/${fileExtension === '.jpg' ? 'jpeg' : 'png'}`;
+
     formData.append('file', {
-      uri: imageUri,
-      type: 'image/jpeg', 
-      name: 'profile.jpg',
+        uri: imageUri,
+        name: fileName,
+        type: fileType,
     });
 
     try {
+        const response = await fetch(`${API.USER}/mypage/edit_profileImg`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${userToken}`,
+                // 'Content-Type': 'multipart/form-data',
+            },
+            body: formData,
+        });
+
+        console.log("업로드 요청 완료, 응답 상태:", response.status);
+
+        if (response.ok) {
+            setProfileImage(imageUri);
+            console.log('이미지 업로드 성공');
+        } else {
+            const errorData = await response.text();
+            console.error('이미지 업로드 실패:', {
+                status: response.status,
+                statusText: response.statusText,
+                errorData: errorData,
+            });
+            Alert.alert('오류', `이미지 업로드 중 오류가 발생했습니다: ${errorData}`);
+        }
+    } catch (err) {
+        const errorMessage = err?.message || err?.toString() || 'Unknown error occurred';
+        console.error('이미지 업로드 중 오류 발생:', {
+            errorMessage: errorMessage,
+            imageUri: imageUri,
+            userToken: userToken ? 'Exists' : 'Missing',
+            APIEndpoint: `${API.USER}/mypage/edit_profileImg`
+        });
+        Alert.alert('오류', `이미지 업로드 중 문제가 발생했습니다: ${errorMessage}`);
+    }
+};
+
+  const uploadDefaultImage = async () => {
+    try {
+      // 기본 이미지 에셋 로드
+      const asset = Asset.fromModule(defaultImage);
+      await asset.downloadAsync(); // 에셋 다운로드
+
+      const formData = new FormData();
+      const base64DefaultImage = await FileSystem.readAsStringAsync(asset.localUri || asset.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      formData.append('file', {
+        uri: asset.localUri || asset.uri,
+        name: 'default_image.png',
+        type: 'image/png',
+      });
+
+      console.log("업로드할 기본 이미지 데이터:", formData);
+
+      const userToken = await AsyncStorage.getItem('userToken');
       const response = await fetch(`${API.USER}/mypage/edit_profileImg`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${userToken}`,
+          'Content-Type': 'multipart/form-data', 
         },
         body: formData,
       });
 
       if (response.ok) {
-        console.log('이미지가 성공적으로 업로드되었습니다.');
-        await loadProfileImage(imageUri);
+        console.log("기본 이미지로 변경 성공");
+        setProfileImage(defaultImageUri);
       } else {
         const errorData = await response.text();
-        console.error('이미지 업로드 실패:', response.status, response.statusText, errorData);
-        Alert.alert('오류', `이미지 업로드 중 오류가 발생했습니다: ${response.statusText}`);
+        console.error("기본 이미지로 변경 실패:", response.status, response.statusText, errorData);
+        Alert.alert('오류', `기본 이미지로 변경 중 오류가 발생했습니다: ${response.statusText}`);
       }
-    } catch (error) {
-      console.error('이미지 업로드 중 오류 발생:', error.message);
-      Alert.alert('오류', `이미지 업로드 중 문제가 발생했습니다: ${error.message}`);
+    } catch (err) { 
+      const errorMessage = err?.message || err?.toString() || 'Unknown error occurred';
+      console.error('기본 이미지로 변경 중 오류 발생:', errorMessage);
+      Alert.alert('오류', `기본 이미지로 변경 중 문제가 발생했습니다: ${errorMessage}`);
     }
   };
 
@@ -184,10 +296,7 @@ export default function MyPageScreen({ navigation }) {
         [
           {
             text: "기본 이미지 적용",
-            onPress: async () => {
-              await AsyncStorage.removeItem('profileImage');
-              setProfileImage(defaultImageUri);
-            },
+            onPress: uploadDefaultImage,
           },
           {
             text: "앨범에서 사진 선택",
@@ -200,7 +309,7 @@ export default function MyPageScreen({ navigation }) {
         ]
       );
     }
-  };
+  };   
 
   const handleLogout = async () => {
     Alert.alert(
@@ -226,15 +335,16 @@ export default function MyPageScreen({ navigation }) {
 
               if (response.ok) {
                 await AsyncStorage.removeItem('userToken');
-                navigation.navigate('Login');
+                navigation.navigate('LoginStack');
                 console.log('로그아웃되었습니다');
               } else {
                 const errorData = await response.json();
                 Alert.alert('오류', errorData.message || '로그아웃 중 오류가 발생했습니다.');
               }
-            } catch (error) {
-              console.error('로그아웃 중 오류 발생:', error.message);
-              Alert.alert('오류', `로그아웃 중 문제가 발생했습니다: ${error.message}`);
+            } catch (err) { 
+              const errorMessage = err?.message || err?.toString() || 'Unknown error occurred'; 
+              console.error('로그아웃 중 오류 발생:', errorMessage);
+              Alert.alert('오류', `로그아웃 중 문제가 발생했습니다: ${errorMessage}`);
             }
           }
         }
@@ -280,8 +390,8 @@ export default function MyPageScreen({ navigation }) {
             info: () => (
               <View style={{ flexDirection: 'row' }}>
                 {profile.languages.length > 0 ? (
-                  profile.languages.map((language, index) => (
-                    <View key={index} style={miniLanguageBox.box}>
+                  profile.languages.map((language) => (
+                    <View key={language} style={miniLanguageBox.box}>
                       <Text style={miniLanguageBox.text}>{language}</Text>
                     </View>
                   ))
@@ -297,8 +407,8 @@ export default function MyPageScreen({ navigation }) {
             info: () => (
               <View style={{ flexDirection: 'row' }}>
                 {profile.learningLanguages.length > 0 ? (
-                  profile.learningLanguages.map((language, index) => (
-                    <View key={index} style={miniLanguageBox.box}>
+                  profile.learningLanguages.map((language) => (
+                    <View key={language} style={miniLanguageBox.box}>
                       <Text style={miniLanguageBox.text}>{language}</Text>
                     </View>
                   ))
@@ -307,7 +417,7 @@ export default function MyPageScreen({ navigation }) {
                 )}
               </View>
             ),
-          },
+          },          
         ]}
         showAdditionalButton={true}
         buttonText='변경하기'
@@ -339,7 +449,7 @@ const styles = StyleSheet.create({
   profileImageWrapper: {
     width: 110,
     height: 110,
-    borderRadius: 50,
+    borderRadius: 55,
     marginLeft: 5,
     alignItems: 'center',
     justifyContent: 'center',
@@ -348,6 +458,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: '100%',
     height: '100%',
+    borderRadius: 55,
   },
   editIcon: {
     width: 30,

@@ -58,16 +58,29 @@ const MyInfoScreen = ({ navigation }) => {
 
   const handleLogout = () => setShowModal(true);
 
-  const confirmLogout = async () => {
+  const handleDeleteAccount = async () => {
     try {
+      const userToken = await AsyncStorage.getItem('userToken');
+      
+      const response = await fetch(`${API.USER}/delete`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+  
       await AsyncStorage.removeItem('userToken');
       setShowModal(false);
       Alert.alert('알림', '탈퇴가 완료되었습니다.');
-      navigation.navigate('Login');
+      navigation.navigate('LoginStack');
     } catch (error) {
       Alert.alert('오류', '탈퇴하는 데 실패했습니다.');
     }
-  };
+  };  
 
   // 값이 없거나 비어 있는 문자열인 경우
   const renderProfileInfo = (value) => {
@@ -126,7 +139,7 @@ const MyInfoScreen = ({ navigation }) => {
             <Text style={styles.modalText}>
               정말로 탈퇴하시겠습니까?{'\n'}그동안 앱에 저장된 내역들은{'\n'}복구되지 않습니다.
             </Text>
-            <TouchableOpacity onPress={confirmLogout} style={styles.modalButton}>
+            <TouchableOpacity onPress={handleDeleteAccount} style={styles.modalButton}>
               <Text style={styles.modalButtonText}>탈퇴하기</Text>
             </TouchableOpacity>
           </View>
