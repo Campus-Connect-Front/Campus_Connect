@@ -72,9 +72,16 @@ export default function MyPageScreen({ navigation }) {
           imgUrl: data.usersDTO.imgUrl || prevProfile.imgUrl,
         }));
         loadProfileImage(data.usersDTO.imgUrl);
-      } catch (error) {
-        console.error('Failed to load profile:', error.message);
-        Alert.alert('오류', `프로필 정보를 로드하는 중 오류가 발생했습니다: ${error.message}`);
+      } catch (err) {
+        const errorMessage = err?.message || err?.toString() || 'Unknown error occurred'; 
+        console.error(
+          `Failed to load profile.\n` +
+          `Error Message: ${errorMessage}\n` +
+          `API Endpoint: ${API.USER}/mypage\n` +
+          `User Token: ${userToken ? 'Exists' : 'Missing'}`
+        );
+    
+        Alert.alert('오류', `프로필 정보를 로드하는 중 오류가 발생했습니다: ${errorMessage}`);
       }
     };
 
@@ -103,17 +110,19 @@ export default function MyPageScreen({ navigation }) {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to load image: ${response.statusText}`);
+        const errormessage = `Failed to load image (HTTP Status: ${response.status} ${response.statusText}) - Image URL: ${imgUrl}`;
+        throw new Error(errormessage);
       }
 
       const imageUri = response.url;
       console.log("서버로부터 받은 이미지 URI:", imageUri);
       setProfileImage(imageUri);
       
-    } catch (error) {
-      console.error('Failed to load profile image:', error.message);
+    } catch (err) { 
+      const errorMessage = err?.message || err?.toString() || 'Unknown error occurred';
+      console.error('Failed to load profile image:', errorMessage);
       setProfileImage(defaultImageUri); 
-      Alert.alert('오류', `프로필 이미지를 로드하는 중 오류가 발생했습니다: ${error.message}`);
+      Alert.alert('오류', `프로필 이미지를 로드하는 중 오류가 발생했습니다: ${errorMessage}`);
     }
   };
 
@@ -169,9 +178,10 @@ export default function MyPageScreen({ navigation }) {
             console.error('이미지 업로드 실패:', response.status, response.statusText, errorData);
             Alert.alert('오류', `이미지 업로드 중 오류가 발생했습니다: ${errorData}`);
         }             
-    } catch (error) {
-        console.error('이미지 업로드 중 오류 발생:', error.message);
-        Alert.alert('오류', `이미지 업로드 중 문제가 발생했습니다: ${error.message}`);
+    } catch (err) {
+        const errorMessage = err?.message || err?.toString() || 'Unknown error occurred'; // 'error'에서 'err'로 변경
+        console.error('이미지 업로드 중 오류 발생:', errorMessage);
+        Alert.alert('오류', `이미지 업로드 중 문제가 발생했습니다: ${errorMessage}`);
     }
   };
 
@@ -212,9 +222,10 @@ export default function MyPageScreen({ navigation }) {
         console.error("기본 이미지로 변경 실패:", response.status, response.statusText, errorData);
         Alert.alert('오류', `기본 이미지로 변경 중 오류가 발생했습니다: ${response.statusText}`);
       }
-    } catch (error) {
-      console.error('기본 이미지로 변경 중 오류 발생:', error.message);
-      Alert.alert('오류', `기본 이미지로 변경 중 문제가 발생했습니다: ${error.message}`);
+    } catch (err) { 
+      const errorMessage = err?.message || err?.toString() || 'Unknown error occurred';
+      console.error('기본 이미지로 변경 중 오류 발생:', errorMessage);
+      Alert.alert('오류', `기본 이미지로 변경 중 문제가 발생했습니다: ${errorMessage}`);
     }
   };
 
@@ -280,15 +291,16 @@ export default function MyPageScreen({ navigation }) {
 
               if (response.ok) {
                 await AsyncStorage.removeItem('userToken');
-                navigation.navigate('Login');
+                navigation.navigate('LoginStack');
                 console.log('로그아웃되었습니다');
               } else {
                 const errorData = await response.json();
                 Alert.alert('오류', errorData.message || '로그아웃 중 오류가 발생했습니다.');
               }
-            } catch (error) {
-              console.error('로그아웃 중 오류 발생:', error.message);
-              Alert.alert('오류', `로그아웃 중 문제가 발생했습니다: ${error.message}`);
+            } catch (err) { 
+              const errorMessage = err?.message || err?.toString() || 'Unknown error occurred'; 
+              console.error('로그아웃 중 오류 발생:', errorMessage);
+              Alert.alert('오류', `로그아웃 중 문제가 발생했습니다: ${errorMessage}`);
             }
           }
         }
@@ -334,8 +346,8 @@ export default function MyPageScreen({ navigation }) {
             info: () => (
               <View style={{ flexDirection: 'row' }}>
                 {profile.languages.length > 0 ? (
-                  profile.languages.map((language, index) => (
-                    <View key={index} style={miniLanguageBox.box}>
+                  profile.languages.map((language) => (
+                    <View key={language} style={miniLanguageBox.box}>
                       <Text style={miniLanguageBox.text}>{language}</Text>
                     </View>
                   ))
@@ -351,8 +363,8 @@ export default function MyPageScreen({ navigation }) {
             info: () => (
               <View style={{ flexDirection: 'row' }}>
                 {profile.learningLanguages.length > 0 ? (
-                  profile.learningLanguages.map((language, index) => (
-                    <View key={index} style={miniLanguageBox.box}>
+                  profile.learningLanguages.map((language) => (
+                    <View key={language} style={miniLanguageBox.box}>
                       <Text style={miniLanguageBox.text}>{language}</Text>
                     </View>
                   ))
@@ -361,7 +373,7 @@ export default function MyPageScreen({ navigation }) {
                 )}
               </View>
             ),
-          },
+          },          
         ]}
         showAdditionalButton={true}
         buttonText='변경하기'
