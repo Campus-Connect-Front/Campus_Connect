@@ -38,6 +38,8 @@ const MyInfoScreen = ({ navigation }) => {
 
         // 서버에서 프로필 데이터 가져오기
         const data = response.data;
+        console.log('Fetched data:', data);
+
         setProfile(prevProfile => ({
           ...prevProfile,
           name: data.userAuthenticationDTO.studentName || prevProfile.name,
@@ -46,12 +48,17 @@ const MyInfoScreen = ({ navigation }) => {
           birthdate: formatDate(data.usersDTO.birthday) || prevProfile.birthdate,
           nickname: data.usersDTO.nickName || prevProfile.nickname,
         }));
+
+        await AsyncStorage.setItem('nickname', nickname);
+        console.log('Nickname has been saved to AsyncStorage:', nickname);
+
       } catch (error) {
         Alert.alert('오류', '프로필 정보를 불러오는 데 실패했습니다.');
       }
     };
 
     loadProfile();
+    console.log("nickname:",nickname);
   }, []);
 
   const handleLogout = () => setShowModal(true);

@@ -16,6 +16,8 @@ export const OneChatScreen = ({ route }) => {
   const { chatName, roomId } = route.params;
   const navigation = useNavigation();
   const [userId, setUserId] = useState(null);
+  const [nickname, setNickname] = useState('');
+  const [profileImage, setProfileImage] = useState(null);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
@@ -48,6 +50,45 @@ export const OneChatScreen = ({ route }) => {
 
     loadUserId();
   }, []);
+
+  // studentId 불러오기 및 nickname 가져오기
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        const userToken = await AsyncStorage.getItem('userToken');
+        const response = await fetch(`${API.USER}/mypage`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${userToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Network response was not ok: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const storedUserId = data.userAuthenticationDTO.studentId;
+        const fetchedNickname = data.usersDTO.nickName;
+        const fetchedProfileImage = `${API.USER}/images/${data.usersDTO.imgUrl}`;
+
+        setUserId(storedUserId);
+        setNickname(fetchedNickname);
+        setProfileImage(fetchedProfileImage);
+
+        console.log('Loaded id from API:', storedUserId);
+        console.log('Loaded nickname from API:', fetchedNickname);
+
+      } catch (error) {
+        console.error('Failed to load user profile:', error.message);
+        Alert.alert('오류', '프로필 정보를 불러오는 데 실패했습니다.');
+      }
+    };
+
+    loadUserProfile();
+  }, []);
+
 
   useEffect(() => {
     // 프로필 이미지를 AsyncStorage에서 불러오는 함수
@@ -97,17 +138,18 @@ export const OneChatScreen = ({ route }) => {
        stomp.subscribe(`/sub/chat/room/${roomId}`, (message) => {
         try {
           const receivedMessage = JSON.parse(message.body);
+          //console.log('Received raw message:', receivedMessage);
           
           const user = receivedMessage.userId || {};
           const student = user.studentId || {};
+          //console.log('NickName in received message:', user.nickName);
 
-          console.log('NickName:', user.nickName);
 
           // 각 필드가 존재하는지 확인하고 기본값을 설정
           const senderId = receivedMessage.studentId || 'Unknown Sender';
           const id = receivedMessage.messageId || `${Date.now()}`; 
-          const profileImage = receivedMessage.profileImage || 'default_profile_image_url'; 
-          const senderName = user.nickName || '익명';
+          const profileImage = receivedMessage.profileImage || profileImage;
+          const senderName = nickname || '익명';
           const timestamp = receivedMessage.sendTime 
             ? new Date(receivedMessage.sendTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) 
             : 'Invalid Date';
@@ -121,7 +163,7 @@ export const OneChatScreen = ({ route }) => {
             profileImage: profileImage,
             senderId: senderId
           };
-          console.log('Formatted message:', formattedMessage);      
+          //console.log('Formatted message:', formattedMessage);      
           setMessages((prevMessages) => [...prevMessages, formattedMessage]);
         } catch (error) {
           console.error('Message processing error: ', error);
@@ -242,10 +284,12 @@ export const OneChatScreen = ({ route }) => {
         return;
       }
       else{console.log(userId);}
+      console.log('Sending message as:', nickname);
       const newMessage = {
         roomId: roomId,
         studentId: userId,
         senderId: userId,
+        senderName: nickname,
         messageContent: inputMessage,
         messageType: 'TALK',
         timestamp: new Date().toISOString(),

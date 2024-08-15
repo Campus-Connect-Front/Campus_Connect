@@ -17,14 +17,15 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
   const { params = {} } = route;
   console.log('Route Params:', route.params);
   const chatName = params.chatName || '채팅방';
-  const userName = params.userName || '수정이';
+  //const userName = params.userName || '수정이';
   const { roomId, userId: initialUserId } = route.params; // 초기 userId를 받기 위해 변경
   const [userId, setUserId] = useState(initialUserId); 
+  const [nickname, setNickname] = useState('');
   const [messages, setMessages] = useState(initialMessages);
   const [inputText, setInputText] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
-  const [participants, setParticipants] = useState([...initialParticipants, { id: 'ME', name: userName, profileImage: require('../assets/circle_logo.png') }]);
+  const [participants, setParticipants] = useState(initialParticipants);
   const [hasEntered, setHasEntered] = useState(false); // 입장 메시지가 한 번만 보내지도록 관리
   const flatListRef = useRef(null);
  
@@ -53,6 +54,50 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
 
     loadUserId();
   }, []);
+
+   // MyPage API에서 nickname과 profileImage 불러오기
+   useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        const userToken = await AsyncStorage.getItem('userToken');
+        const response = await fetch(`${API.USER}/mypage`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${userToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Network response was not ok: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const storedUserId = data.userAuthenticationDTO.studentId;
+        const fetchedNickname = data.usersDTO.nickName;
+        const fetchedProfileImage = `${API.USER}/images/${data.usersDTO.imgUrl}`;
+
+        setUserId(storedUserId);
+        setNickname(fetchedNickname); // nickname 설정
+        setOtherProfileImage(fetchedProfileImage); // 프로필 이미지 설정
+
+        setParticipants([
+          { id: 'ME', name: fetchedNickname, profileImage: fetchedProfileImage } // 초기 참가자 설정
+        ]);
+
+        console.log('Loaded id from API:', storedUserId);
+        console.log('Loaded nickname from API:', fetchedNickname);
+        console.log('Loaded profile image from API:', fetchedProfileImage);
+
+      } catch (error) {
+        console.error('Failed to load user profile:', error.message);
+        Alert.alert('오류', '프로필 정보를 불러오는 데 실패했습니다.');
+      }
+    };
+
+    loadUserProfile();
+  }, [roomId]);
+
 
   useEffect(() => {
     // 프로필 이미지를 AsyncStorage에서 불러오는 함수
@@ -108,8 +153,8 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
           // 각 필드가 존재하는지 확인하고 기본값을 설정
           const senderId = receivedMessage.studentId || 'Unknown Sender';
           const id = receivedMessage.messageId || `${Date.now()}`; 
-          const profileImage = receivedMessage.profileImage || 'default_profile_image_url'; 
-          const senderName = user.nickName || '익명';
+          const profileImage = receivedMessage.profileImage || profileImage;;
+          const senderName = nickname || '익명';
           const timestamp = receivedMessage.sendTime 
             ? new Date(receivedMessage.sendTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) 
             : 'Invalid Date';
@@ -333,7 +378,7 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
         isVisible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
         participants={participants}
-        userName={userName}
+        userName={nickname}
         onExit={handleExit} 
       />
     </KeyboardAvoidingView>
