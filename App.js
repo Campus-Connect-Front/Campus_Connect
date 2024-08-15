@@ -191,5 +191,3 @@ const styles = StyleSheet.create({
     resizeMode: 'contain', 
   },
 });
-
-console.disableYellowBox = true;
