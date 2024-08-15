@@ -292,7 +292,11 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
   };
   
   const renderItem = ({ item }) => {
-    // 시스템 메시지 처리
+    if (!item) {
+      return null;
+    }
+  
+    // 기존 코드
     if (item.messageType === 'ENTER' || item.messageType === 'LEAVE') {
       return (
         <View style={styles.systemMessageContainer}>
@@ -306,13 +310,13 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
         {!item.isMine && (
           <>
             <Image
-              source={item.profileImage ? { uri: item.profileImage } : require('../assets/circle_logo.png')}
+              source={item.profileImage = require('../assets/circle_logo.png')}
               style={styles.profileImage}
             />
           </>
         )}
         <View style={styles.messageContentContainer}>
-          {!item.isMine && <Text style={styles.senderName}>{item.senderName || '익명'}</Text>}
+          {!item.isMine && <Text style={styles.senderName}>{nickname || '익명'}</Text>}
           <View style={item.isMine ? styles.myBubbleContainer : styles.otherBubbleContainer}>
             <View style={[styles.bubble, item.isMine ? styles.myBubble : styles.otherBubble]}>
               <Text style={item.isMine ? styles.myMessageText : styles.otherMessageText}>{item.messageContent}</Text>
@@ -323,15 +327,16 @@ export const GroupChatScreen = ({ route = {}, navigation }) => {
       </View>
     );
   };
+  
 
   
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={80}>
       <FlatList
         ref={flatListRef}
-        data={messages}
+        data={messages.filter(Boolean)}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item ? item.id : Math.random().toString()} 
         style={styles.chatList}
         onContentSizeChange={() => flatListRef.current.scrollToEnd({ animated: true })}
       />
