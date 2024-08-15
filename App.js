@@ -34,8 +34,8 @@ const TempSplashScreen = () => {
 
 const MyPageStackNavigator = () => {
   return (
-    <Stack.Navigator initialRouteName="MyPage">
-      <Stack.Screen  name="MyPage" component={MyPageScreen} options={{ title: '마이페이지' }}/>
+    <Stack.Navigator initialRouteName="MyPageStack">
+      <Stack.Screen  name="MyPageStack" component={MyPageScreen} options={{ title: '마이페이지' }}/>
       <Stack.Screen name="EditMyInfo" component={EditMyInfoScreen} options={({ navigation }) => ({
         title: 'MyInfo 수정',
         headerLeft: () => (
@@ -68,8 +68,8 @@ const MyPageStackNavigator = () => {
 
 const LoginStackNavigator = () => {
   return (
-    <Stack.Navigator initialRouteName="Login">
-      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+    <Stack.Navigator initialRouteName="LoginStack">
+      <Stack.Screen name="LoginStack" component={LoginScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Signup" component={SignupScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Verification" component={VerificationScreen} options={{ headerShown: false }} />
       <Stack.Screen name="AdditionalInfo" component={AdditionalInfoScreen} options={{ headerShown: false }} />

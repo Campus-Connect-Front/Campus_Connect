@@ -80,6 +80,7 @@ const MatchingWaitScreen = ({ parentNav, navigation }) => {
                 if (!result || !result.roomId) {
                     failedMatching(); // 매칭 실패 처리
                 } else {
+                    setModalVisible(false); // 모달 닫기
                     navigation.navigate('Done', { chatName: result.roomName, roomId: result.roomId}); // 매칭 성공 처리
                 }
             }

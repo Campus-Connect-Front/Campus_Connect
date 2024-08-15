@@ -63,7 +63,7 @@ export default function AdditionalInfoScreen({ route, navigation }) {
 
       const result = await response.text();
       Alert.alert('회원가입 완료', result, [
-        { text: 'OK', onPress: () => navigation.navigate('Login') },
+        { text: 'OK', onPress: () => navigation.navigate('LoginStack') },
       ]);
     } catch (error) {
       console.error('회원가입 오류:', error);
