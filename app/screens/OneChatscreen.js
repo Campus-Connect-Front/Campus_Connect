@@ -101,16 +101,6 @@ useEffect(() => {
 
 
   useEffect(() => {
-    // 프로필 이미지를 AsyncStorage에서 불러오는 함수
-    // const loadProfileImages = async () => {
-    //   try {
-    //     const otherImage = await AsyncStorage.getItem(`profileImage-${roomId}`); // 상대방의 프로필 이미지 가져오기 (채팅방 ID 기준으로 구분)
-    //     setOtherProfileImage(otherImage);
-    //   } catch (error) {
-    //     console.error('Failed to load profile images:', error);
-    //   }
-    // };
-    // loadProfileImages(); // 컴포넌트가 마운트될 때 프로필 이미지 로드
 
     // sockJS 클라이언트 생성 및 websocket 연결
     const socket = new SockJS("http://192.168.45.57:8090/stomp/chat");
@@ -272,21 +262,6 @@ useEffect(() => {
     );
   };
   
-  // const handleNewMessage = (newMessage) => {
-  //   setMessages(prevMessages => {
-  //     const updatedMessages = [...prevMessages, newMessage];
-
-  //     if (updatedMessages.length > 10) {
-  //       // Save old messages to AsyncStorage
-  //       AsyncStorage.setItem('oldMessages', JSON.stringify(updatedMessages.slice(0, -5)));
-
-  //       // Return only the last 10 messages
-  //       return updatedMessages.slice(-5);
-  //     }
-
-  //     return updatedMessages;
-  //   });
-  // };
 
   const handleSend = () => {
     if (stompClient && stompClient.connected) {
